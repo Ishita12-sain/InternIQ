@@ -15,6 +15,18 @@ import { StudentTimelinePage } from './pages/student/StudentTimelinePage';
 import { StudentDocuments } from './pages/student/StudentDocuments';
 import { StudentLogbook } from './pages/student/StudentLogbook';
 import { StudentNotifications } from './pages/student/StudentNotifications';
+import { CompanyDashboard } from './pages/company/CompanyDashboard';
+import { CompanyManageInternshipsPage } from './pages/company/CompanyManageInternshipsPage';
+import { CompanyInternshipDetailsPage } from './pages/company/CompanyInternshipDetailsPage';
+import { PostInternshipPage } from './pages/company/PostInternshipPage';
+import { CompanyApplicantsPage } from './pages/company/CompanyApplicantsPage';
+import { CompanyShortlistedPage } from './pages/company/CompanyShortlistedPage';
+import { CompanyInterviewsPage } from './pages/company/CompanyInterviewsPage';
+import { CompanyProfilePage } from './pages/company/CompanyProfilePage';
+import { CompanyNotificationsPage } from './pages/company/CompanyNotificationsPage';
+import { CompanySmartMatchingPage } from './pages/company/CompanySmartMatchingPage';
+import { CompanyVerificationPage } from './pages/company/CompanyVerificationPage';
+import { CompanyAnalyticsPage } from './pages/company/CompanyAnalyticsPage';
 import { DummyDashboardPage } from './pages/dashboard/DummyDashboardPage';
 
 export const App: React.FC = () => {
@@ -66,6 +78,23 @@ export const App: React.FC = () => {
 
         {/* Student Notifications Route */}
         <Route path="/student/notifications" element={<StudentNotifications />} />
+
+        {/* Company Dashboard & Features Routes */}
+        <Route path="/dashboard/company" element={<CompanyDashboard />} />
+        <Route path="/company/dashboard" element={<CompanyDashboard />} />
+        <Route path="/company/analytics" element={<CompanyAnalyticsPage />} />
+        <Route path="/company/internships" element={<CompanyManageInternshipsPage />} />
+        <Route path="/company/internships/new" element={<PostInternshipPage />} />
+        <Route path="/company/internships/:internshipId" element={<CompanyInternshipDetailsPage />} />
+        <Route path="/company/internships/:internshipId/applicants" element={<CompanyApplicantsPage />} />
+        <Route path="/company/post-internship" element={<PostInternshipPage />} />
+        <Route path="/company/applicants" element={<CompanyApplicantsPage />} />
+        <Route path="/company/shortlisted" element={<CompanyShortlistedPage />} />
+        <Route path="/company/interviews" element={<CompanyInterviewsPage />} />
+        <Route path="/company/smart-matching" element={<CompanySmartMatchingPage />} />
+        <Route path="/company/profile" element={<CompanyProfilePage />} />
+        <Route path="/company/verification" element={<CompanyVerificationPage />} />
+        <Route path="/company/notifications" element={<CompanyNotificationsPage />} />
 
         {/* Scalable Placeholder Dashboard Routes for Other Roles */}
         <Route path="/dashboard/:role" element={<DummyDashboardPage />} />

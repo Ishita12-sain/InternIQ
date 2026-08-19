@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { ROLE_OPTIONS } from '../../config/roles';
 import type { RoleType } from '../../types/auth';
 import { ArrowLeft, CheckCircle2, Sparkles } from 'lucide-react';
@@ -8,6 +8,10 @@ export const DummyDashboardPage: React.FC = () => {
   const { role } = useParams<{ role: RoleType }>();
   const location = useLocation();
   const navigate = useNavigate();
+
+  if (role === 'company') {
+    return <Navigate to="/dashboard/company" replace />;
+  }
 
   const user = location.state?.user || {
     name: 'Authorized User',
