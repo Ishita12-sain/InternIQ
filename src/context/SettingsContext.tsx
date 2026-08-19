@@ -137,20 +137,56 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<SettingsState>(() => {
     try {
+      const savedTheme = localStorage.getItem('interniq-appearance');
       const saved = localStorage.getItem('interniq_admin_settings');
-      if (saved) return JSON.parse(saved);
+      let baseSettings = DEFAULT_SETTINGS;
+      if (saved) {
+        baseSettings = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+      }
+      if (savedTheme) {
+        baseSettings.theme = savedTheme === 'dark' ? 'Dark' : savedTheme === 'system' ? 'System' : 'Light';
+      }
+      return baseSettings;
     } catch (err) {
       console.warn('Failed to parse settings from localStorage', err);
     }
     return DEFAULT_SETTINGS;
   });
 
-  // Save changes to localStorage
+  // Save changes to localStorage and apply theme to html root
   useEffect(() => {
     try {
       localStorage.setItem('interniq_admin_settings', JSON.stringify(settings));
+      const storageValue = settings.theme === 'Dark' ? 'dark' : settings.theme === 'System' ? 'system' : 'light';
+      localStorage.setItem('interniq-appearance', storageValue);
     } catch (err) {
       console.warn('Failed to save settings to localStorage', err);
+    }
+
+    const root = document.documentElement;
+    const applyTheme = (theme: 'Light' | 'Dark' | 'System') => {
+      let isDark = false;
+      if (theme === 'Dark') {
+        isDark = true;
+      } else if (theme === 'System') {
+        isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+
+      if (isDark) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+    };
+
+    applyTheme(settings.theme);
+
+    // System theme listener if set to System
+    if (settings.theme === 'System') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = () => applyTheme('System');
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
     }
   }, [settings]);
 

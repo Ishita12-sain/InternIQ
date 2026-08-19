@@ -111,16 +111,13 @@ export const LoginForm: React.FC = () => {
         />
 
         <div className="flex justify-end mt-1.5">
-          <a
-            href="#forgot-password"
-            onClick={(e) => {
-              e.preventDefault();
-              alert(`Password reset instructions sent for ${selectedRole.toUpperCase()} account.`);
-            }}
-            className="text-xs font-medium text-[#2563eb] hover:text-blue-700 transition-colors"
+          <button
+            type="button"
+            onClick={() => navigate('/forgot-password')}
+            className="text-xs font-medium text-[#2563eb] hover:text-blue-700 transition-colors cursor-pointer"
           >
             Forgot Password?
-          </a>
+          </button>
         </div>
       </div>
 

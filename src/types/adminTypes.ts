@@ -42,6 +42,14 @@ export interface AdminStudentItem {
   };
   createdDate?: string;
   accountStatus?: 'Active' | 'Suspended';
+  facultyId?: string;
+  cgpa?: string;
+  mentorNotes?: {
+    id: string;
+    note: string;
+    date: string;
+    facultyName: string;
+  }[];
 }
 
 export interface AdminCompanyItem {

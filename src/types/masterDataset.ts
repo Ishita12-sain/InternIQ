@@ -200,6 +200,16 @@ export const generatedStudents: AdminStudentItem[] = Array.from({ length: 1420 }
     selected: 0,
     createdDate: `${day < 10 ? '0' + day : day} 08 2026`,
     accountStatus: 'Active',
+    facultyId: `fac-${(i % 64) + 1}`,
+    cgpa: (8.0 + ((i % 19) / 10)).toFixed(1),
+    mentorNotes: [
+      {
+        id: `note-${i + 1}-1`,
+        note: 'Candidate demonstrates strong technical problem-solving skills in algorithm design.',
+        date: '12 Aug 2026',
+        facultyName: 'Dr. Aristh (Faculty)',
+      },
+    ],
   };
 });
 

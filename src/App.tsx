@@ -4,6 +4,8 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { StudentRegistrationPage } from './pages/auth/StudentRegistration';
 import { RoleRegistrationPlaceholderPage } from './pages/auth/RoleRegistrationPlaceholderPage';
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { StudentDashboard } from './pages/student/StudentDashboard';
 import { StudentProfile } from './pages/student/StudentProfile';
 import { StudentReadiness } from './pages/student/StudentReadiness';
@@ -57,6 +59,11 @@ import { TPInterviewsPage } from './pages/tp/TPInterviewsPage';
 import { TPPlacementsPage, TPPlacementDetailsPage } from './pages/tp/TPPlacementsPage';
 import { TPReportsPage } from './pages/tp/TPReportsPage';
 import { TPProfilePage, TPSettingsPage } from './pages/tp/TPProfilePage';
+import { FacultyDashboardPage, FacultyStudentsPage, FacultyStudentDetailsPage } from './pages/faculty/FacultyDashboardPage';
+import { FacultyInternshipsPage, FacultyInternshipDetailsPage, FacultyApplicationsPage, FacultyApplicationDetailsPage } from './pages/faculty/FacultyInternshipsPage';
+import { FacultyReportsPage, FacultyProfilePage, FacultySettingsPage } from './pages/faculty/FacultyReportsPage';
+import { FacultyNotificationsPage } from './pages/faculty/FacultyNotificationsPage';
+import { FacultySecuritySettingsPage } from './pages/faculty/FacultySecuritySettingsPage';
 import { NotificationProvider } from './context/NotificationContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { AuditLogProvider } from './context/AuditLogContext';
@@ -76,6 +83,8 @@ export const App: React.FC = () => {
           
           {/* Login Page Route */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Register Role Selector Route */}
           <Route path="/register" element={<RegisterPage />} />
@@ -183,6 +192,24 @@ export const App: React.FC = () => {
           <Route path="/tp/notifications" element={<AdminNotificationsPage />} />
           <Route path="/tp/profile" element={<TPProfilePage />} />
           <Route path="/tp/settings" element={<TPSettingsPage />} />
+
+          {/* Faculty Mentor Routes */}
+          <Route path="/dashboard/faculty" element={<FacultyDashboardPage />} />
+          <Route path="/faculty/dashboard" element={<FacultyDashboardPage />} />
+          <Route path="/faculty/mentees" element={<FacultyStudentsPage />} />
+          <Route path="/faculty/students" element={<FacultyStudentsPage />} />
+          <Route path="/faculty/students/:id" element={<FacultyStudentDetailsPage />} />
+          <Route path="/faculty/internships" element={<FacultyInternshipsPage />} />
+          <Route path="/faculty/internships/:id" element={<FacultyInternshipDetailsPage />} />
+          <Route path="/faculty/applications" element={<FacultyApplicationsPage />} />
+          <Route path="/faculty/applications/:id" element={<FacultyApplicationDetailsPage />} />
+          <Route path="/faculty/companies" element={<TPCompaniesPage />} />
+          <Route path="/faculty/companies/:id" element={<TPCompanyDetailsPage />} />
+          <Route path="/faculty/reports" element={<FacultyReportsPage />} />
+          <Route path="/faculty/notifications" element={<FacultyNotificationsPage />} />
+          <Route path="/faculty/profile" element={<FacultyProfilePage />} />
+          <Route path="/faculty/settings" element={<FacultySettingsPage />} />
+          <Route path="/faculty/settings/security" element={<FacultySecuritySettingsPage />} />
 
           {/* Scalable Placeholder Dashboard Routes for Other Roles */}
           <Route path="/dashboard/:role" element={<DummyDashboardPage />} />
