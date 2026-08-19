@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface FacultySidebarProps {
   isOpen: boolean;
@@ -27,6 +28,13 @@ export const FacultySidebar: React.FC<FacultySidebarProps> = ({ isOpen, onClose 
   const location = useLocation();
   const { settings } = useSettings();
   const { unreadCount } = useNotification();
+  const { user, logout } = useAuth();
+
+  const handleSignOut = () => {
+    logout();
+    navigate('/login', { replace: true });
+    onClose();
+  };
 
   const navItems = [
     { label: 'Dashboard', path: '/faculty/dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -60,25 +68,25 @@ export const FacultySidebar: React.FC<FacultySidebarProps> = ({ isOpen, onClose 
           {/* Header Brand */}
           <div className="h-16 px-6 border-b border-[#e2e8f0] flex items-center justify-between">
             <div className="flex items-center space-x-2.5">
-              <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-xs tracking-tight shadow-2xs">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-extrabold text-sm shadow-2xs">
                 IQ
               </div>
-              <span className="font-black text-base text-[#0f172a] tracking-tight">
+              <span className="text-lg font-extrabold tracking-tight text-[#0f172a]">
                 Faculty<span className="text-indigo-600">Portal</span>
               </span>
             </div>
             <button
               onClick={onClose}
-              className="lg:hidden p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+              className="lg:hidden text-slate-400 hover:text-slate-600 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-8rem)]">
+          {/* Nav Links */}
+          <nav className="p-3 space-y-1">
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path || (item.path !== '/faculty/dashboard' && location.pathname.startsWith(item.path));
+              const isActive = location.pathname === item.path;
               return (
                 <button
                   key={item.path}
@@ -86,16 +94,14 @@ export const FacultySidebar: React.FC<FacultySidebarProps> = ({ isOpen, onClose 
                     navigate(item.path);
                     onClose();
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-indigo-50 text-indigo-600 font-extrabold shadow-2xs'
-                      : 'text-[#64748b] hover:bg-slate-50 hover:text-[#0f172a]'
+                      ? 'bg-indigo-50 text-indigo-700 font-bold border border-indigo-100 shadow-2xs'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
                   <div className="flex items-center space-x-3">
-                    <span className={isActive ? 'text-indigo-600' : 'text-slate-400'}>
-                      {item.icon}
-                    </span>
+                    <span className={isActive ? 'text-indigo-600' : 'text-slate-400'}>{item.icon}</span>
                     <span>{item.label}</span>
                   </div>
                   {item.label === 'Notifications' && unreadCount > 0 ? (
@@ -129,16 +135,16 @@ export const FacultySidebar: React.FC<FacultySidebarProps> = ({ isOpen, onClose 
                 />
               ) : (
                 <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-2xs">
-                  FM
+                  {user?.name ? user.name.slice(0, 2).toUpperCase() : 'FM'}
                 </div>
               )}
               <div className="truncate text-left">
-                <p className="text-xs font-bold text-[#0f172a] truncate">Dr. Aristh (Faculty)</p>
-                <p className="text-[11px] text-[#64748b] truncate">faculty@interniq.edu</p>
+                <p className="text-xs font-bold text-[#0f172a] truncate">{user?.name || 'Dr. Aristh (Faculty)'}</p>
+                <p className="text-[11px] text-[#64748b] truncate">{user?.email || 'faculty@interniq.edu'}</p>
               </div>
             </div>
             <button
-              onClick={() => navigate('/login')}
+              onClick={handleSignOut}
               title="Sign Out"
               className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
             >
