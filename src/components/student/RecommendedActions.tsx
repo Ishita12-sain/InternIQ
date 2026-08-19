@@ -10,9 +10,10 @@ export interface ActionItem {
 
 interface RecommendedActionsProps {
   actions: ActionItem[];
+  onImprove: (actionId: string) => void;
 }
 
-export const RecommendedActions: React.FC<RecommendedActionsProps> = ({ actions }) => {
+export const RecommendedActions: React.FC<RecommendedActionsProps> = ({ actions, onImprove }) => {
   return (
     <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-2xs space-y-4 text-left">
       <h3 className="text-base font-bold text-[#0f172a]">Recommended Actions</h3>
@@ -34,7 +35,7 @@ export const RecommendedActions: React.FC<RecommendedActionsProps> = ({ actions 
             </div>
 
             <button
-              onClick={() => alert(`Starting path for: ${action.title}`)}
+              onClick={() => onImprove(action.id)}
               className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-[#2563eb] text-xs font-bold shadow-2xs transition-colors cursor-pointer shrink-0"
             >
               <span>Improve</span>

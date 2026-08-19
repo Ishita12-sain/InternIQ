@@ -11,10 +11,150 @@ import { SkillComparison } from '../../components/student/SkillComparison';
 import type { ComparisonSkill } from '../../components/student/SkillComparison';
 import { RecommendedActions } from '../../components/student/RecommendedActions';
 import type { ActionItem } from '../../components/student/RecommendedActions';
+import { SkillResourceView } from '../../components/student/SkillResourceView';
+import type { SkillResourceData } from '../../components/student/SkillResourceView';
 import { BookOpen, Code, Container, Layers, Info } from 'lucide-react';
 
 export const StudentSkillGap: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+
+  const skillResourceMap: Record<string, SkillResourceData> = {
+    '1': {
+      skillId: '1',
+      skillTitle: 'Learn REST APIs',
+      explanation: 'REST APIs are fundamental for client-server communication in modern web applications.',
+      resources: [
+        {
+          id: 'r1',
+          title: 'REST API Crash Course - Fundamentals & HTTP Methods',
+          type: 'Video',
+          platform: 'YouTube (freeCodeCamp)',
+          durationOrTime: '45 mins',
+          url: 'https://www.youtube.com/watch?v=-MTSQjw51EQ',
+        },
+        {
+          id: 'r2',
+          title: 'MDN Web Docs: Introduction to REST APIs & HTTP Requests',
+          type: 'Article',
+          platform: 'MDN Web Docs',
+          durationOrTime: '15 min read',
+          url: 'https://developer.mozilla.org/en-US/docs/Glossary/REST',
+        },
+        {
+          id: 'r3',
+          title: 'Postman API Network & Hands-on REST Practice',
+          type: 'Practice',
+          platform: 'Postman Academy',
+          durationOrTime: 'Interactive',
+          url: 'https://learning.postman.com/',
+        },
+      ],
+    },
+    '2': {
+      skillId: '2',
+      skillTitle: 'Practice Advanced React',
+      explanation: 'Advanced React patterns like custom hooks, performance tuning, and context optimization are required for senior frontend roles.',
+      resources: [
+        {
+          id: 'r4',
+          title: 'Advanced React Patterns, Custom Hooks & Performance Optimization',
+          type: 'Video',
+          platform: 'YouTube (React Official Channel / Traversy)',
+          durationOrTime: '1 hr 15 mins',
+          url: 'https://react.dev/learn',
+        },
+        {
+          id: 'r5',
+          title: 'React Official Documentation: Reusing Logic with Custom Hooks',
+          type: 'Article',
+          platform: 'React Official Docs',
+          durationOrTime: '20 min read',
+          url: 'https://react.dev/learn/reusing-logic-with-custom-hooks',
+        },
+        {
+          id: 'r6',
+          title: 'Frontend Mentor: Build a Complex React State Management App',
+          type: 'Practice',
+          platform: 'Frontend Mentor',
+          durationOrTime: 'Hands-on Project',
+          url: 'https://www.frontendmentor.io/',
+        },
+      ],
+    },
+    '3': {
+      skillId: '3',
+      skillTitle: 'Build a Docker Project',
+      explanation: 'Containerization with Docker ensures application portability and is widely used across backend and DevOps teams.',
+      resources: [
+        {
+          id: 'r7',
+          title: 'Docker Tutorial for Beginners - Full Course',
+          type: 'Video',
+          platform: 'YouTube (TechWorld with Nana)',
+          durationOrTime: '2 hrs',
+          url: 'https://www.youtube.com/watch?v=3c-iBn73dDE',
+        },
+        {
+          id: 'r8',
+          title: 'Docker Official Get Started Documentation',
+          type: 'Article',
+          platform: 'Docker Docs',
+          durationOrTime: '25 min read',
+          url: 'https://docs.docker.com/get-started/',
+        },
+        {
+          id: 'r9',
+          title: 'Play with Docker: Online Interactive Lab',
+          type: 'Practice',
+          platform: 'Docker Labs',
+          durationOrTime: 'Interactive Lab',
+          url: 'https://labs.play-with-docker.com/',
+        },
+      ],
+    },
+    '4': {
+      skillId: '4',
+      skillTitle: 'Study System Design',
+      explanation: 'System design fundamentals help you architect scalable microservices, implement caching, and understand load balancing.',
+      resources: [
+        {
+          id: 'r10',
+          title: 'System Design Primer for Beginners',
+          type: 'Video',
+          platform: 'YouTube (ByteByteGo)',
+          durationOrTime: '55 mins',
+          url: 'https://www.youtube.com/c/ByteByteGo',
+        },
+        {
+          id: 'r11',
+          title: 'The System Design Primer - GitHub Master Reference',
+          type: 'Article',
+          platform: 'GitHub Reference',
+          durationOrTime: 'Comprehensive Guide',
+          url: 'https://github.com/donnemartin/system-design-primer',
+        },
+        {
+          id: 'r12',
+          title: 'LeetCode System Design Interview Practice',
+          type: 'Practice',
+          platform: 'LeetCode / Exponent',
+          durationOrTime: 'Practice Problems',
+          url: 'https://leetcode.com/explore/interview/card/system-design/',
+        },
+      ],
+    },
+  };
+
+  const handleImproveSkill = (actionId: string) => {
+    setSelectedSkillId(actionId);
+    setTimeout(() => {
+      const element = document.getElementById('skill-resource-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 50);
+  };
 
   const currentSkills: CurrentSkillItem[] = [
     { name: 'React', level: 'Strong' },
@@ -140,8 +280,16 @@ export const StudentSkillGap: React.FC = () => {
           {/* Level Comparison & Action Recommendations */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <SkillComparison skills={comparisonSkills} />
-            <RecommendedActions actions={recommendedActions} />
+            <RecommendedActions actions={recommendedActions} onImprove={handleImproveSkill} />
           </div>
+
+          {/* Dedicated Skill Improvement & Resource View */}
+          {selectedSkillId && skillResourceMap[selectedSkillId] && (
+            <SkillResourceView
+              data={skillResourceMap[selectedSkillId]}
+              onBack={() => setSelectedSkillId(null)}
+            />
+          )}
         </main>
       </div>
     </div>

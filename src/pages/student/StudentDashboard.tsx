@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { StudentSidebar } from '../../components/student/StudentSidebar';
 import { DashboardHeader } from '../../components/student/DashboardHeader';
 import { SummaryCard } from '../../components/student/SummaryCard';
@@ -10,6 +11,7 @@ import { InternshipTimeline } from '../../components/student/InternshipTimeline'
 import { Award, FileText, Sparkles, CheckCircle2, Search, User, Eye } from 'lucide-react';
 
 export const StudentDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const mockInternships: InternshipItem[] = [
@@ -63,21 +65,21 @@ export const StudentDashboard: React.FC = () => {
             {/* Quick Action Buttons */}
             <div className="flex flex-wrap items-center gap-2">
               <button
-                onClick={() => alert("Search Internships triggered")}
+                onClick={() => navigate('/student/internship-search')}
                 className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-[#2563eb] hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
               >
                 <Search className="w-3.5 h-3.5" />
                 <span>Search Internships</span>
               </button>
               <button
-                onClick={() => alert("Update Profile triggered")}
+                onClick={() => navigate('/student/profile')}
                 className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-[#e2e8f0] text-xs font-semibold transition-colors cursor-pointer"
               >
                 <User className="w-3.5 h-3.5 text-slate-500" />
                 <span>Update Profile</span>
               </button>
               <button
-                onClick={() => alert("View Applications triggered")}
+                onClick={() => navigate('/student/applications')}
                 className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-[#e2e8f0] text-xs font-semibold transition-colors cursor-pointer"
               >
                 <Eye className="w-3.5 h-3.5 text-slate-500" />
@@ -127,7 +129,10 @@ export const StudentDashboard: React.FC = () => {
                   <h3 className="text-base font-bold text-[#0f172a]">
                     Recommended Internships
                   </h3>
-                  <span className="text-xs font-semibold text-[#2563eb] cursor-pointer hover:underline">
+                  <span
+                    onClick={() => navigate('/student/recommended-internships')}
+                    className="text-xs font-semibold text-[#2563eb] cursor-pointer hover:underline"
+                  >
                     View All
                   </span>
                 </div>
@@ -137,7 +142,7 @@ export const StudentDashboard: React.FC = () => {
                     <InternshipCard
                       key={internship.id}
                       internship={internship}
-                      onApply={() => alert(`Applied for ${internship.role} at ${internship.company}`)}
+                      onApply={() => navigate('/student/applications')}
                     />
                   ))}
                 </div>

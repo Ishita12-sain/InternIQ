@@ -18,20 +18,35 @@ export const StudentProfile: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const [profile, setProfile] = useState<StudentProfileData>({
-    name: 'Aarav Sharma',
-    email: 'student@interniq.edu',
-    studentId: 'STU2026-001',
-    department: 'Computer Engineering',
-    year: '3rd Year',
-    phone: '+91 98765 43210',
-    dob: '15 August 2005',
-    gender: 'Prefer not to say',
-    city: 'Pune, Maharashtra',
-    college: 'ABC Institute of Technology',
-    cgpa: '8.4 / 10',
-    graduationYear: '2027',
+  const [profile, setProfile] = useState<StudentProfileData>(() => {
+    const savedPhoto = localStorage.getItem('interniq_student_photo');
+    return {
+      name: 'Aarav Sharma',
+      email: 'student@interniq.edu',
+      studentId: 'STU2026-001',
+      department: 'Computer Engineering',
+      year: '3rd Year',
+      phone: '+91 98765 43210',
+      dob: '15 August 2005',
+      gender: 'Prefer not to say',
+      city: 'Pune, Maharashtra',
+      college: 'ABC Institute of Technology',
+      cgpa: '8.4 / 10',
+      graduationYear: '2027',
+      linkedinUrl: 'https://www.linkedin.com/in/aarav-sharma',
+      photoUrl: savedPhoto || undefined,
+    };
   });
+
+  const handlePhotoUpload = (photoUrl: string) => {
+    setProfile((prev) => ({ ...prev, photoUrl }));
+    localStorage.setItem('interniq_student_photo', photoUrl);
+  };
+
+  const handlePhotoRemove = () => {
+    setProfile((prev) => ({ ...prev, photoUrl: undefined }));
+    localStorage.removeItem('interniq_student_photo');
+  };
 
   const [skills, setSkills] = useState<string[]>([
     'React', 'TypeScript', 'JavaScript', 'HTML', 'CSS', 'Node.js', 'Git', 'SQL'
@@ -153,6 +168,8 @@ export const StudentProfile: React.FC = () => {
                   });
                   setIsEditModalOpen(true);
                 }}
+                onPhotoUpload={handlePhotoUpload}
+                onPhotoRemove={handlePhotoRemove}
               />
             </div>
 

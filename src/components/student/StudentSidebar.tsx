@@ -31,13 +31,13 @@ export const StudentSidebar: React.FC<StudentSidebarProps> = ({ isOpen, onClose 
     { label: 'Profile', path: '/student/profile', icon: <User className="w-4 h-4" /> },
     { label: 'Readiness Score', path: '/student/readiness', icon: <Award className="w-4 h-4" /> },
     { label: 'Skill Gap', path: '/student/skill-gap', icon: <Target className="w-4 h-4" /> },
-    { label: 'Recommended Internships', path: '/dashboard/student', icon: <Sparkles className="w-4 h-4" /> },
-    { label: 'Internship Search', path: '/dashboard/student', icon: <Search className="w-4 h-4" /> },
-    { label: 'Applications', path: '/dashboard/student', icon: <FileText className="w-4 h-4" /> },
-    { label: 'Internship Timeline', path: '/dashboard/student', icon: <Clock className="w-4 h-4" /> },
-    { label: 'Documents', path: '/dashboard/student', icon: <Folder className="w-4 h-4" /> },
-    { label: 'Digital Logbook', path: '/dashboard/student', icon: <BookOpen className="w-4 h-4" /> },
-    { label: 'Notifications', path: '/dashboard/student', icon: <Bell className="w-4 h-4" /> },
+    { label: 'Recommended Internships', path: '/student/recommended-internships', icon: <Sparkles className="w-4 h-4" /> },
+    { label: 'Internship Search', path: '/student/internship-search', icon: <Search className="w-4 h-4" /> },
+    { label: 'Applications', path: '/student/applications', icon: <FileText className="w-4 h-4" /> },
+    { label: 'Internship Timeline', path: '/student/timeline', icon: <Clock className="w-4 h-4" /> },
+    { label: 'Documents', path: '/student/documents', icon: <Folder className="w-4 h-4" /> },
+    { label: 'Digital Logbook', path: '/student/logbook', icon: <BookOpen className="w-4 h-4" /> },
+    { label: 'Notifications', path: '/student/notifications', icon: <Bell className="w-4 h-4" /> },
   ];
 
   return (

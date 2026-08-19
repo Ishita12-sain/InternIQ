@@ -26,8 +26,8 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
         Select Your Role
       </label>
 
-      {/* 5-column grid on desktop matching reference layout */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+      {/* 5-column grid on desktop, compact grid on mobile */}
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2.5">
         {ROLE_OPTIONS.map((role) => {
           const isSelected = selectedRole === role.id;
           return (

@@ -8,6 +8,13 @@ import { StudentDashboard } from './pages/student/StudentDashboard';
 import { StudentProfile } from './pages/student/StudentProfile';
 import { StudentReadiness } from './pages/student/StudentReadiness';
 import { StudentSkillGap } from './pages/student/StudentSkillGap';
+import { StudentRecommendedInternships } from './pages/student/StudentRecommendedInternships';
+import { StudentInternshipSearch } from './pages/student/StudentInternshipSearch';
+import { StudentApplications } from './pages/student/StudentApplications';
+import { StudentTimelinePage } from './pages/student/StudentTimelinePage';
+import { StudentDocuments } from './pages/student/StudentDocuments';
+import { StudentLogbook } from './pages/student/StudentLogbook';
+import { StudentNotifications } from './pages/student/StudentNotifications';
 import { DummyDashboardPage } from './pages/dashboard/DummyDashboardPage';
 
 export const App: React.FC = () => {
@@ -38,6 +45,27 @@ export const App: React.FC = () => {
 
         {/* Student Skill Gap Route */}
         <Route path="/student/skill-gap" element={<StudentSkillGap />} />
+
+        {/* Student Recommended Internships Route */}
+        <Route path="/student/recommended-internships" element={<StudentRecommendedInternships />} />
+
+        {/* Student Internship Search Route */}
+        <Route path="/student/internship-search" element={<StudentInternshipSearch />} />
+
+        {/* Student Applications Route */}
+        <Route path="/student/applications" element={<StudentApplications />} />
+
+        {/* Student Internship Timeline Route */}
+        <Route path="/student/timeline" element={<StudentTimelinePage />} />
+
+        {/* Student Documents Route */}
+        <Route path="/student/documents" element={<StudentDocuments />} />
+
+        {/* Student Digital Logbook Route */}
+        <Route path="/student/logbook" element={<StudentLogbook />} />
+
+        {/* Student Notifications Route */}
+        <Route path="/student/notifications" element={<StudentNotifications />} />
 
         {/* Scalable Placeholder Dashboard Routes for Other Roles */}
         <Route path="/dashboard/:role" element={<DummyDashboardPage />} />
