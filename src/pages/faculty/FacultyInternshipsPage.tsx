@@ -57,18 +57,26 @@ export const FacultyInternshipsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
+  // Assigned Mentees Scoping
+  const mentees = useMemo(() => {
+    return generatedStudents.filter((s) => s.facultyId === 'fac-1' || parseInt(s.id.replace('st-', ''), 10) % 64 === 1);
+  }, []);
+  const menteeIds = useMemo(() => new Set(mentees.map((m) => m.id)), [mentees]);
+
   // Calculate summary metrics directly from shared datasets
   const metrics = useMemo(() => {
     const totalInternships = generatedInternships.length;
     const active = generatedInternships.filter((i) => i.status === 'Active').length;
     const upcoming = generatedInternships.filter((i) => i.status === 'Pending Review' || i.status === 'Draft' || i.status === 'Expiring Soon').length;
-    const ongoing = generatedPlacements.filter((p) => p.status === 'Ongoing' || p.status === 'Joining Soon').length;
-    const completed = generatedPlacements.filter((p) => p.status === 'Completed').length;
-    const totalApps = generatedApplications.length;
-    const selectedStudents = generatedApplications.filter((a) => a.status === 'Selected').length;
+    const menteePlacements = generatedPlacements.filter((p) => menteeIds.has(p.studentId));
+    const ongoing = menteePlacements.filter((p) => p.status === 'Ongoing' || p.status === 'Joining Soon').length;
+    const completed = menteePlacements.filter((p) => p.status === 'Completed').length;
+    const menteeApps = generatedApplications.filter((a) => menteeIds.has(a.studentId));
+    const totalApps = menteeApps.length;
+    const selectedStudents = menteeApps.filter((a) => a.status === 'Selected').length;
 
     return { totalInternships, active, upcoming, ongoing, completed, totalApps, selectedStudents };
-  }, []);
+  }, [menteeIds]);
 
   const filteredInternships = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
