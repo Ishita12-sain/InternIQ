@@ -64,163 +64,143 @@ import { FacultyInternshipsPage, FacultyInternshipDetailsPage, FacultyApplicatio
 import { FacultyReportsPage, FacultyProfilePage, FacultySettingsPage } from './pages/faculty/FacultyReportsPage';
 import { FacultyNotificationsPage } from './pages/faculty/FacultyNotificationsPage';
 import { FacultySecuritySettingsPage } from './pages/faculty/FacultySecuritySettingsPage';
+import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { AuditLogProvider } from './context/AuditLogContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AdminSelectedStudentsPage } from './pages/admin/AdminSelectedStudentsPage';
 import { AdminOngoingInternshipsPage } from './pages/admin/AdminOngoingInternshipsPage';
 import { DummyDashboardPage } from './pages/dashboard/DummyDashboardPage';
 
 export const App: React.FC = () => {
   return (
-    <SettingsProvider>
-      <AuditLogProvider>
-        <NotificationProvider>
-        <Router>
-        <Routes>
-          {/* Redirect root URL / to /login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          
-          {/* Login Page Route */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
+    <AuthProvider>
+      <SettingsProvider>
+        <AuditLogProvider>
+          <NotificationProvider>
+            <Router>
+              <Routes>
+                {/* Public Auth Routes */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-          {/* Register Role Selector Route */}
-          <Route path="/register" element={<RegisterPage />} />
+                {/* Public Registration Routes */}
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/register/student" element={<StudentRegistrationPage />} />
+                <Route path="/register/:role" element={<RoleRegistrationPlaceholderPage />} />
 
-          {/* Role Specific Registration Routes */}
-          <Route path="/register/student" element={<StudentRegistrationPage />} />
-          <Route path="/register/:role" element={<RoleRegistrationPlaceholderPage />} />
+                {/* Student Protected Routes */}
+                <Route path="/dashboard/student" element={<ProtectedRoute allowedRoles={['student']}><StudentDashboard /></ProtectedRoute>} />
+                <Route path="/student/profile" element={<ProtectedRoute allowedRoles={['student']}><StudentProfile /></ProtectedRoute>} />
+                <Route path="/student/readiness" element={<ProtectedRoute allowedRoles={['student']}><StudentReadiness /></ProtectedRoute>} />
+                <Route path="/student/skill-gap" element={<ProtectedRoute allowedRoles={['student']}><StudentSkillGap /></ProtectedRoute>} />
+                <Route path="/student/recommended-internships" element={<ProtectedRoute allowedRoles={['student']}><StudentRecommendedInternships /></ProtectedRoute>} />
+                <Route path="/student/internship-search" element={<ProtectedRoute allowedRoles={['student']}><StudentInternshipSearch /></ProtectedRoute>} />
+                <Route path="/student/applications" element={<ProtectedRoute allowedRoles={['student']}><StudentApplications /></ProtectedRoute>} />
+                <Route path="/student/timeline" element={<ProtectedRoute allowedRoles={['student']}><StudentTimelinePage /></ProtectedRoute>} />
+                <Route path="/student/documents" element={<ProtectedRoute allowedRoles={['student']}><StudentDocuments /></ProtectedRoute>} />
+                <Route path="/student/logbook" element={<ProtectedRoute allowedRoles={['student']}><StudentLogbook /></ProtectedRoute>} />
+                <Route path="/student/notifications" element={<ProtectedRoute allowedRoles={['student']}><StudentNotifications /></ProtectedRoute>} />
 
-          {/* Student Dashboard Route */}
-          <Route path="/dashboard/student" element={<StudentDashboard />} />
+                {/* Company Protected Routes */}
+                <Route path="/dashboard/company" element={<ProtectedRoute allowedRoles={['company']}><CompanyDashboard /></ProtectedRoute>} />
+                <Route path="/company/dashboard" element={<ProtectedRoute allowedRoles={['company']}><CompanyDashboard /></ProtectedRoute>} />
+                <Route path="/company/analytics" element={<ProtectedRoute allowedRoles={['company']}><CompanyAnalyticsPage /></ProtectedRoute>} />
+                <Route path="/company/internships" element={<ProtectedRoute allowedRoles={['company']}><CompanyManageInternshipsPage /></ProtectedRoute>} />
+                <Route path="/company/internships/new" element={<ProtectedRoute allowedRoles={['company']}><PostInternshipPage /></ProtectedRoute>} />
+                <Route path="/company/internships/:internshipId" element={<ProtectedRoute allowedRoles={['company']}><CompanyInternshipDetailsPage /></ProtectedRoute>} />
+                <Route path="/company/internships/:internshipId/applicants" element={<ProtectedRoute allowedRoles={['company']}><CompanyApplicantsPage /></ProtectedRoute>} />
+                <Route path="/company/post-internship" element={<ProtectedRoute allowedRoles={['company']}><PostInternshipPage /></ProtectedRoute>} />
+                <Route path="/company/applicants" element={<ProtectedRoute allowedRoles={['company']}><CompanyApplicantsPage /></ProtectedRoute>} />
+                <Route path="/company/shortlisted" element={<ProtectedRoute allowedRoles={['company']}><CompanyShortlistedPage /></ProtectedRoute>} />
+                <Route path="/company/interviews" element={<ProtectedRoute allowedRoles={['company']}><CompanyInterviewsPage /></ProtectedRoute>} />
+                <Route path="/company/smart-matching" element={<ProtectedRoute allowedRoles={['company']}><CompanySmartMatchingPage /></ProtectedRoute>} />
+                <Route path="/company/profile" element={<ProtectedRoute allowedRoles={['company']}><CompanyProfilePage /></ProtectedRoute>} />
+                <Route path="/company/verification" element={<ProtectedRoute allowedRoles={['company']}><CompanyVerificationPage /></ProtectedRoute>} />
+                <Route path="/company/notifications" element={<ProtectedRoute allowedRoles={['company']}><CompanyNotificationsPage /></ProtectedRoute>} />
 
-          {/* Student Profile Route */}
-          <Route path="/student/profile" element={<StudentProfile />} />
+                {/* Admin Protected Routes */}
+                <Route path="/dashboard/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboardPage /></ProtectedRoute>} />
+                <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboardPage /></ProtectedRoute>} />
+                <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><AdminUsersOverviewPage /></ProtectedRoute>} />
+                <Route path="/admin/users/:id" element={<ProtectedRoute allowedRoles={['admin']}><AdminUserDetailsPage /></ProtectedRoute>} />
+                <Route path="/admin/students" element={<ProtectedRoute allowedRoles={['admin']}><AdminStudentsPage /></ProtectedRoute>} />
+                <Route path="/admin/students/:id" element={<ProtectedRoute allowedRoles={['admin']}><AdminStudentDetailsPage /></ProtectedRoute>} />
+                <Route path="/admin/companies" element={<ProtectedRoute allowedRoles={['admin']}><AdminCompaniesPage /></ProtectedRoute>} />
+                <Route path="/admin/companies/:id" element={<ProtectedRoute allowedRoles={['admin']}><AdminCompanyDetailsPage /></ProtectedRoute>} />
+                <Route path="/admin/faculty" element={<ProtectedRoute allowedRoles={['admin']}><AdminFacultyPage /></ProtectedRoute>} />
+                <Route path="/admin/faculty/:id" element={<ProtectedRoute allowedRoles={['admin']}><AdminFacultyDetailsPage /></ProtectedRoute>} />
+                <Route path="/admin/internships" element={<ProtectedRoute allowedRoles={['admin']}><AdminInternshipsPage /></ProtectedRoute>} />
+                <Route path="/admin/internships/:id" element={<ProtectedRoute allowedRoles={['admin']}><AdminInternshipDetailsPage /></ProtectedRoute>} />
+                <Route path="/admin/applications" element={<ProtectedRoute allowedRoles={['admin']}><AdminApplicationsPage /></ProtectedRoute>} />
+                <Route path="/admin/applications/:id" element={<ProtectedRoute allowedRoles={['admin']}><AdminApplicationDetailsPage /></ProtectedRoute>} />
+                <Route path="/admin/verifications" element={<ProtectedRoute allowedRoles={['admin']}><AdminVerificationsPage /></ProtectedRoute>} />
+                <Route path="/admin/verifications/:id" element={<ProtectedRoute allowedRoles={['admin']}><AdminVerificationDetailsPage /></ProtectedRoute>} />
+                <Route path="/admin/analytics" element={<ProtectedRoute allowedRoles={['admin']}><AdminAnalyticsPage /></ProtectedRoute>} />
+                <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={['admin']}><AdminReportsPage /></ProtectedRoute>} />
+                <Route path="/admin/notifications" element={<ProtectedRoute allowedRoles={['admin']}><AdminNotificationsPage /></ProtectedRoute>} />
+                <Route path="/admin/audit-logs" element={<ProtectedRoute allowedRoles={['admin']}><AdminAuditLogsPage /></ProtectedRoute>} />
+                <Route path="/admin/audit-logs/:id" element={<ProtectedRoute allowedRoles={['admin']}><AdminAuditLogDetailsPage /></ProtectedRoute>} />
+                <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><AdminSettingsPage /></ProtectedRoute>} />
+                <Route path="/admin/selected-students" element={<ProtectedRoute allowedRoles={['admin']}><AdminSelectedStudentsPage /></ProtectedRoute>} />
+                <Route path="/admin/ongoing-internships" element={<ProtectedRoute allowedRoles={['admin']}><AdminOngoingInternshipsPage /></ProtectedRoute>} />
 
-          {/* Student Readiness Score Route */}
-          <Route path="/student/readiness" element={<StudentReadiness />} />
+                {/* T&P Officer Protected Routes */}
+                <Route path="/dashboard/tp" element={<ProtectedRoute allowedRoles={['tnp']}><TPDashboardPage /></ProtectedRoute>} />
+                <Route path="/dashboard/tnp" element={<ProtectedRoute allowedRoles={['tnp']}><TPDashboardPage /></ProtectedRoute>} />
+                <Route path="/tp/dashboard" element={<ProtectedRoute allowedRoles={['tnp']}><TPDashboardPage /></ProtectedRoute>} />
+                <Route path="/tp/students" element={<ProtectedRoute allowedRoles={['tnp']}><TPStudentsPage /></ProtectedRoute>} />
+                <Route path="/tp/students/:id" element={<ProtectedRoute allowedRoles={['tnp']}><TPStudentDetailsPage /></ProtectedRoute>} />
+                <Route path="/tp/companies" element={<ProtectedRoute allowedRoles={['tnp']}><TPCompaniesPage /></ProtectedRoute>} />
+                <Route path="/tp/companies/:id" element={<ProtectedRoute allowedRoles={['tnp']}><TPCompanyDetailsPage /></ProtectedRoute>} />
+                <Route path="/tp/internships" element={<ProtectedRoute allowedRoles={['tnp']}><TPInternshipsPage /></ProtectedRoute>} />
+                <Route path="/tp/internships/:id" element={<ProtectedRoute allowedRoles={['tnp']}><TPInternshipDetailsPage /></ProtectedRoute>} />
+                <Route path="/tp/applications" element={<ProtectedRoute allowedRoles={['tnp']}><TPApplicationsPage /></ProtectedRoute>} />
+                <Route path="/tp/applications/:id" element={<ProtectedRoute allowedRoles={['tnp']}><TPApplicationDetailsPage /></ProtectedRoute>} />
+                <Route path="/tp/interviews" element={<ProtectedRoute allowedRoles={['tnp']}><TPInterviewsPage /></ProtectedRoute>} />
+                <Route path="/tp/placements" element={<ProtectedRoute allowedRoles={['tnp']}><TPPlacementsPage /></ProtectedRoute>} />
+                <Route path="/tp/placements/:id" element={<ProtectedRoute allowedRoles={['tnp']}><TPPlacementDetailsPage /></ProtectedRoute>} />
+                <Route path="/tp/reports" element={<ProtectedRoute allowedRoles={['tnp']}><TPReportsPage /></ProtectedRoute>} />
+                <Route path="/tp/reports/placement" element={<ProtectedRoute allowedRoles={['tnp']}><TPReportsPage /></ProtectedRoute>} />
+                <Route path="/tp/reports/company" element={<ProtectedRoute allowedRoles={['tnp']}><TPReportsPage /></ProtectedRoute>} />
+                <Route path="/tp/reports/student" element={<ProtectedRoute allowedRoles={['tnp']}><TPReportsPage /></ProtectedRoute>} />
+                <Route path="/tp/reports/internship" element={<ProtectedRoute allowedRoles={['tnp']}><TPReportsPage /></ProtectedRoute>} />
+                <Route path="/tp/notifications" element={<ProtectedRoute allowedRoles={['tnp']}><AdminNotificationsPage /></ProtectedRoute>} />
+                <Route path="/tp/profile" element={<ProtectedRoute allowedRoles={['tnp']}><TPProfilePage /></ProtectedRoute>} />
+                <Route path="/tp/settings" element={<ProtectedRoute allowedRoles={['tnp']}><TPSettingsPage /></ProtectedRoute>} />
 
-          {/* Student Skill Gap Route */}
-          <Route path="/student/skill-gap" element={<StudentSkillGap />} />
+                {/* Faculty Protected Routes */}
+                <Route path="/dashboard/faculty" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyDashboardPage /></ProtectedRoute>} />
+                <Route path="/faculty/dashboard" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyDashboardPage /></ProtectedRoute>} />
+                <Route path="/faculty/mentees" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyStudentsPage /></ProtectedRoute>} />
+                <Route path="/faculty/students" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyStudentsPage /></ProtectedRoute>} />
+                <Route path="/faculty/students/:id" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyStudentDetailsPage /></ProtectedRoute>} />
+                <Route path="/faculty/internships" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyInternshipsPage /></ProtectedRoute>} />
+                <Route path="/faculty/internships/:id" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyInternshipDetailsPage /></ProtectedRoute>} />
+                <Route path="/faculty/applications" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyApplicationsPage /></ProtectedRoute>} />
+                <Route path="/faculty/applications/:id" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyApplicationDetailsPage /></ProtectedRoute>} />
+                <Route path="/faculty/companies" element={<ProtectedRoute allowedRoles={['faculty']}><TPCompaniesPage /></ProtectedRoute>} />
+                <Route path="/faculty/companies/:id" element={<ProtectedRoute allowedRoles={['faculty']}><TPCompanyDetailsPage /></ProtectedRoute>} />
+                <Route path="/faculty/reports" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyReportsPage /></ProtectedRoute>} />
+                <Route path="/faculty/notifications" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyNotificationsPage /></ProtectedRoute>} />
+                <Route path="/faculty/profile" element={<ProtectedRoute allowedRoles={['faculty']}><FacultyProfilePage /></ProtectedRoute>} />
+                <Route path="/faculty/settings" element={<ProtectedRoute allowedRoles={['faculty']}><FacultySettingsPage /></ProtectedRoute>} />
+                <Route path="/faculty/settings/security" element={<ProtectedRoute allowedRoles={['faculty']}><FacultySecuritySettingsPage /></ProtectedRoute>} />
 
-          {/* Student Recommended Internships Route */}
-          <Route path="/student/recommended-internships" element={<StudentRecommendedInternships />} />
+                {/* Dynamic Role Dashboard Placeholder */}
+                <Route path="/dashboard/:role" element={<DummyDashboardPage />} />
 
-          {/* Student Internship Search Route */}
-          <Route path="/student/internship-search" element={<StudentInternshipSearch />} />
-
-          {/* Student Applications Route */}
-          <Route path="/student/applications" element={<StudentApplications />} />
-
-          {/* Student Internship Timeline Route */}
-          <Route path="/student/timeline" element={<StudentTimelinePage />} />
-
-          {/* Student Documents Route */}
-          <Route path="/student/documents" element={<StudentDocuments />} />
-
-          {/* Student Digital Logbook Route */}
-          <Route path="/student/logbook" element={<StudentLogbook />} />
-
-          {/* Student Notifications Route */}
-          <Route path="/student/notifications" element={<StudentNotifications />} />
-
-          {/* Company Dashboard & Features Routes */}
-          <Route path="/dashboard/company" element={<CompanyDashboard />} />
-          <Route path="/company/dashboard" element={<CompanyDashboard />} />
-          <Route path="/company/analytics" element={<CompanyAnalyticsPage />} />
-          <Route path="/company/internships" element={<CompanyManageInternshipsPage />} />
-          <Route path="/company/internships/new" element={<PostInternshipPage />} />
-          <Route path="/company/internships/:internshipId" element={<CompanyInternshipDetailsPage />} />
-          <Route path="/company/internships/:internshipId/applicants" element={<CompanyApplicantsPage />} />
-          <Route path="/company/post-internship" element={<PostInternshipPage />} />
-          <Route path="/company/applicants" element={<CompanyApplicantsPage />} />
-          <Route path="/company/shortlisted" element={<CompanyShortlistedPage />} />
-          <Route path="/company/interviews" element={<CompanyInterviewsPage />} />
-          <Route path="/company/smart-matching" element={<CompanySmartMatchingPage />} />
-          <Route path="/company/profile" element={<CompanyProfilePage />} />
-          <Route path="/company/verification" element={<CompanyVerificationPage />} />
-          <Route path="/company/notifications" element={<CompanyNotificationsPage />} />
-
-          {/* Admin Dashboard & Feature Routes */}
-          <Route path="/dashboard/admin" element={<AdminDashboardPage />} />
-          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-          <Route path="/admin/users" element={<AdminUsersOverviewPage />} />
-          <Route path="/admin/users/:id" element={<AdminUserDetailsPage />} />
-          <Route path="/admin/students" element={<AdminStudentsPage />} />
-          <Route path="/admin/students/:id" element={<AdminStudentDetailsPage />} />
-          <Route path="/admin/companies" element={<AdminCompaniesPage />} />
-          <Route path="/admin/companies/:id" element={<AdminCompanyDetailsPage />} />
-          <Route path="/admin/faculty" element={<AdminFacultyPage />} />
-          <Route path="/admin/faculty/:id" element={<AdminFacultyDetailsPage />} />
-          <Route path="/admin/internships" element={<AdminInternshipsPage />} />
-          <Route path="/admin/internships/:id" element={<AdminInternshipDetailsPage />} />
-          <Route path="/admin/applications" element={<AdminApplicationsPage />} />
-          <Route path="/admin/applications/:id" element={<AdminApplicationDetailsPage />} />
-          <Route path="/admin/verifications" element={<AdminVerificationsPage />} />
-          <Route path="/admin/verifications/:id" element={<AdminVerificationDetailsPage />} />
-          <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
-          <Route path="/admin/reports" element={<AdminReportsPage />} />
-          <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
-          <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
-          <Route path="/admin/audit-logs/:id" element={<AdminAuditLogDetailsPage />} />
-          <Route path="/admin/settings" element={<AdminSettingsPage />} />
-          <Route path="/admin/selected-students" element={<AdminSelectedStudentsPage />} />
-          <Route path="/admin/ongoing-internships" element={<AdminOngoingInternshipsPage />} />
-
-          {/* T&P Officer Routes */}
-          <Route path="/dashboard/tp" element={<TPDashboardPage />} />
-          <Route path="/dashboard/tnp" element={<TPDashboardPage />} />
-          <Route path="/tp/dashboard" element={<TPDashboardPage />} />
-          <Route path="/tp/students" element={<TPStudentsPage />} />
-          <Route path="/tp/students/:id" element={<TPStudentDetailsPage />} />
-          <Route path="/tp/companies" element={<TPCompaniesPage />} />
-          <Route path="/tp/companies/:id" element={<TPCompanyDetailsPage />} />
-          <Route path="/tp/internships" element={<TPInternshipsPage />} />
-          <Route path="/tp/internships/:id" element={<TPInternshipDetailsPage />} />
-          <Route path="/tp/applications" element={<TPApplicationsPage />} />
-          <Route path="/tp/applications/:id" element={<TPApplicationDetailsPage />} />
-          <Route path="/tp/interviews" element={<TPInterviewsPage />} />
-          <Route path="/tp/placements" element={<TPPlacementsPage />} />
-          <Route path="/tp/placements/:id" element={<TPPlacementDetailsPage />} />
-          <Route path="/tp/reports" element={<TPReportsPage />} />
-          <Route path="/tp/reports/placement" element={<TPReportsPage />} />
-          <Route path="/tp/reports/company" element={<TPReportsPage />} />
-          <Route path="/tp/reports/student" element={<TPReportsPage />} />
-          <Route path="/tp/reports/internship" element={<TPReportsPage />} />
-          <Route path="/tp/notifications" element={<AdminNotificationsPage />} />
-          <Route path="/tp/profile" element={<TPProfilePage />} />
-          <Route path="/tp/settings" element={<TPSettingsPage />} />
-
-          {/* Faculty Mentor Routes */}
-          <Route path="/dashboard/faculty" element={<FacultyDashboardPage />} />
-          <Route path="/faculty/dashboard" element={<FacultyDashboardPage />} />
-          <Route path="/faculty/mentees" element={<FacultyStudentsPage />} />
-          <Route path="/faculty/students" element={<FacultyStudentsPage />} />
-          <Route path="/faculty/students/:id" element={<FacultyStudentDetailsPage />} />
-          <Route path="/faculty/internships" element={<FacultyInternshipsPage />} />
-          <Route path="/faculty/internships/:id" element={<FacultyInternshipDetailsPage />} />
-          <Route path="/faculty/applications" element={<FacultyApplicationsPage />} />
-          <Route path="/faculty/applications/:id" element={<FacultyApplicationDetailsPage />} />
-          <Route path="/faculty/companies" element={<TPCompaniesPage />} />
-          <Route path="/faculty/companies/:id" element={<TPCompanyDetailsPage />} />
-          <Route path="/faculty/reports" element={<FacultyReportsPage />} />
-          <Route path="/faculty/notifications" element={<FacultyNotificationsPage />} />
-          <Route path="/faculty/profile" element={<FacultyProfilePage />} />
-          <Route path="/faculty/settings" element={<FacultySettingsPage />} />
-          <Route path="/faculty/settings/security" element={<FacultySecuritySettingsPage />} />
-
-          {/* Scalable Placeholder Dashboard Routes for Other Roles */}
-          <Route path="/dashboard/:role" element={<DummyDashboardPage />} />
-
-          {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </Router>
-    </NotificationProvider>
-  </AuditLogProvider>
-</SettingsProvider>
+                {/* Fallback Route */}
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </Routes>
+            </Router>
+          </NotificationProvider>
+        </AuditLogProvider>
+      </SettingsProvider>
+    </AuthProvider>
   );
 };
 

@@ -6,9 +6,11 @@ import { RoleSelector } from './RoleSelector';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Mail, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [selectedRole, setSelectedRole] = useState<RoleType>('student');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,19 +61,13 @@ export const LoginForm: React.FC = () => {
 
     setTimeout(() => {
       setIsLoading(false);
-      navigate(`/dashboard/${selectedRole}`, {
-        state: {
-          user: {
-            ...MOCK_USERS[selectedRole],
-            role: selectedRole,
-          },
-        },
-      });
+      login(selectedRole);
+      navigate(`/dashboard/${selectedRole}`);
     }, 600);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5 text-left">
       {/* Email Input */}
       <Input
         label="Email Address"
@@ -129,7 +125,7 @@ export const LoginForm: React.FC = () => {
         type="submit"
         variant="primary"
         size="lg"
-        className="w-full py-3.5 text-base font-semibold rounded-xl bg-[#2563eb] hover:bg-blue-700 text-white shadow-sm transition-all"
+        className="w-full py-3.5 text-base font-semibold rounded-xl bg-[#2563eb] hover:bg-blue-700 text-white shadow-sm transition-all cursor-pointer"
         isLoading={isLoading}
       >
         Sign In
@@ -147,7 +143,7 @@ export const LoginForm: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate('/register')}
-          className="text-[#2563eb] font-semibold hover:underline cursor-pointer focus:outline-none"
+          className="font-bold text-[#2563eb] hover:text-blue-700 cursor-pointer"
         >
           Create Account
         </button>
