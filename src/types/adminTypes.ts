@@ -210,6 +210,67 @@ export interface AdminApplicationItem {
   }[];
 }
 
+export interface AdminInterviewItem {
+  id: string;
+  applicationId: string;
+  studentId: string;
+  candidateName: string;
+  studentEmail: string;
+  avatarInitials: string;
+  companyId: string;
+  companyName: string;
+  companyLogo?: string;
+  internshipId: string;
+  internshipTitle: string;
+  date: string; // ISO format or display string '2026-08-20' / '20 Aug 2026'
+  isoDate: string; // '2026-08-20'
+  time: string; // '10:30 AM'
+  duration: string; // '45 mins'
+  type: 'Technical' | 'HR' | 'Managerial' | 'Final' | 'Other';
+  round: string; // 'Round 1'
+  status: 'Upcoming' | 'Scheduled' | 'Completed' | 'Cancelled' | 'Rescheduled';
+  location: string; // 'Google Meet Link'
+  meetingLink?: string;
+  notes?: string;
+  cancellationReason?: string;
+  outcome?: 'Selected' | 'Rejected' | 'Further Round' | 'On Hold';
+  outcomeNotes?: string;
+  history?: {
+    action: string;
+    date: string;
+    time?: string;
+    note?: string;
+  }[];
+}
+
+export interface AdminPlacementItem {
+  id: string;
+  applicationId: string;
+  studentId: string;
+  candidateName: string;
+  studentEmail: string;
+  avatarInitials: string;
+  companyId: string;
+  companyName: string;
+  companyLogo?: string;
+  internshipId: string;
+  internshipTitle: string;
+  selectionDate: string;
+  offerDate: string;
+  offerAcceptanceDate: string;
+  joiningDate: string;
+  expectedEndDate: string;
+  duration: string;
+  stipend: string;
+  stipendNumeric: number;
+  status: 'Offer Accepted' | 'Joining Soon' | 'Ongoing' | 'Completed' | 'Not Joined';
+  workLocation: string;
+  workMode: string;
+  reportingContact?: string;
+  mentorFeedback?: string;
+  performanceRating?: string;
+}
+
 export interface AdminSelectedStudentItem {
   id: string;
   studentName: string;
@@ -247,6 +308,8 @@ import {
   generatedFaculty,
   generatedInternships,
   generatedApplications,
+  generatedInterviews,
+  generatedPlacements,
   generatedPendingVerifications,
   generatedPlatformSummary,
 } from './masterDataset';
@@ -257,6 +320,8 @@ export const mockAdminCompanies = generatedCompanies;
 export const mockAdminFaculty = generatedFaculty;
 export const mockAdminInternships = generatedInternships;
 export const mockAdminApplications = generatedApplications;
+export const mockAdminInterviews = generatedInterviews;
+export const mockAdminPlacements = generatedPlacements;
 export const mockPendingVerifications = generatedPendingVerifications;
 
 export const mockSelectedStudents: AdminSelectedStudentItem[] = [

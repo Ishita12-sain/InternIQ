@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { TPSidebar } from '../../components/tp/TPSidebar';
 import { TPHeader } from '../../components/tp/TPHeader';
 import { mockAdminInternships } from '../../types/adminTypes';
@@ -7,8 +7,10 @@ import { Search, Filter, ArrowLeft } from 'lucide-react';
 
 export const TPInternshipsPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('All');
+  const initialStatus = searchParams.get('status') || 'All';
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredInternships = useMemo(() => {

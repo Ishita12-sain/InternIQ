@@ -162,6 +162,7 @@ export const App: React.FC = () => {
 
           {/* T&P Officer Routes */}
           <Route path="/dashboard/tp" element={<TPDashboardPage />} />
+          <Route path="/dashboard/tnp" element={<TPDashboardPage />} />
           <Route path="/tp/dashboard" element={<TPDashboardPage />} />
           <Route path="/tp/students" element={<TPStudentsPage />} />
           <Route path="/tp/students/:id" element={<TPStudentDetailsPage />} />
@@ -175,6 +176,10 @@ export const App: React.FC = () => {
           <Route path="/tp/placements" element={<TPPlacementsPage />} />
           <Route path="/tp/placements/:id" element={<TPPlacementDetailsPage />} />
           <Route path="/tp/reports" element={<TPReportsPage />} />
+          <Route path="/tp/reports/placement" element={<TPReportsPage />} />
+          <Route path="/tp/reports/company" element={<TPReportsPage />} />
+          <Route path="/tp/reports/student" element={<TPReportsPage />} />
+          <Route path="/tp/reports/internship" element={<TPReportsPage />} />
           <Route path="/tp/notifications" element={<AdminNotificationsPage />} />
           <Route path="/tp/profile" element={<TPProfilePage />} />
           <Route path="/tp/settings" element={<TPSettingsPage />} />

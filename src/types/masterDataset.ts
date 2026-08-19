@@ -6,6 +6,8 @@ import type {
   AdminApplicationItem,
   PendingVerificationItem,
   AdminPlatformSummary,
+  AdminInterviewItem,
+  AdminPlacementItem,
 } from './adminTypes';
 
 // Seeded PRNG for Deterministic Master Dataset Generation
@@ -277,6 +279,133 @@ export const generatedApplications: AdminApplicationItem[] = Array.from({ length
     ],
   };
 });
+// 4.5 Generate Interconnected Interviews Array derived from Applications in Interview / Selected status
+export const generatedInterviews: AdminInterviewItem[] = generatedApplications
+  .filter((a) => a.status === 'Interview' || a.status === 'Selected' || a.id.startsWith('app-1') || a.id.startsWith('app-2'))
+  .map((app, idx) => {
+    // Generate realistic interview dates relative to current date (2026-08-20)
+    // idx % 10 == 0 -> Today (2026-08-20)
+    // idx % 10 < 4 -> Upcoming / Scheduled (2026-08-21 to 2026-08-25)
+    // idx % 10 < 8 -> Completed (2026-08-10 to 2026-08-19)
+    // idx % 10 == 8 -> Cancelled
+    // idx % 10 == 9 -> Rescheduled
+    let isoDate = '2026-08-20';
+    let status: 'Upcoming' | 'Scheduled' | 'Completed' | 'Cancelled' | 'Rescheduled' = 'Scheduled';
+    let type: 'Technical' | 'HR' | 'Managerial' | 'Final' | 'Other' = 'Technical';
+    const mod = idx % 10;
+
+    if (mod === 0) {
+      isoDate = '2026-08-20'; // Today
+      status = 'Scheduled';
+      type = 'Technical';
+    } else if (mod < 4) {
+      const d = 21 + (idx % 5);
+      isoDate = `2026-08-${d < 10 ? '0' + d : d}`;
+      status = 'Upcoming';
+      type = mod === 1 ? 'Technical' : mod === 2 ? 'HR' : 'Managerial';
+    } else if (mod < 8) {
+      const d = 10 + (idx % 8);
+      isoDate = `2026-08-${d < 10 ? '0' + d : d}`;
+      status = 'Completed';
+      type = mod === 5 ? 'Technical' : mod === 6 ? 'Final' : 'HR';
+    } else if (mod === 8) {
+      isoDate = '2026-08-18';
+      status = 'Cancelled';
+      type = 'Technical';
+    } else {
+      isoDate = '2026-08-22';
+      status = 'Rescheduled';
+      type = 'Managerial';
+    }
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const parts = isoDate.split('-');
+    const displayDate = `${parts[2]} ${months[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
+
+    return {
+      id: `iv-${idx + 1}`,
+      applicationId: app.id,
+      studentId: app.studentId,
+      candidateName: app.candidateName,
+      studentEmail: app.studentEmail,
+      avatarInitials: app.avatarInitials,
+      companyId: app.companyId,
+      companyName: app.companyName,
+      companyLogo: app.companyLogo,
+      internshipId: app.internshipId,
+      internshipTitle: app.internshipTitle,
+      date: displayDate,
+      isoDate,
+      time: idx % 2 === 0 ? '10:30 AM' : '02:30 PM',
+      duration: '45 Mins',
+      type,
+      round: `Round ${(idx % 3) + 1}`,
+      status,
+      location: 'Google Meet Video Call',
+      meetingLink: 'https://meet.google.com/xyz-interniq-drive',
+      notes: 'Candidate should bring updated resume and digital portfolio.',
+      cancellationReason: status === 'Cancelled' ? 'Recruiter rescheduled drive due to executive conflict.' : undefined,
+      outcome: status === 'Completed' ? (app.status === 'Selected' ? 'Selected' : 'Further Round') : undefined,
+      history: [
+        { action: 'Scheduled', date: '12 Aug 2026', time: '09:00 AM', note: 'Initial invitation dispatched by T&P cell.' },
+        ...(status === 'Rescheduled' ? [{ action: 'Rescheduled', date: '16 Aug 2026', time: '11:00 AM', note: 'Shifted time block upon student request.' }] : []),
+        ...(status === 'Completed' ? [{ action: 'Completed', date: displayDate, time: '11:15 AM', note: 'Technical interview completed cleanly.' }] : []),
+        ...(status === 'Cancelled' ? [{ action: 'Cancelled', date: '18 Aug 2026', time: '04:00 PM', note: 'Session cancelled by corporate recruiter.' }] : []),
+      ],
+    };
+  });
+
+// 4.8 Generate Interconnected Placements Array derived strictly from Selected Applications (312 items)
+export const generatedPlacements: AdminPlacementItem[] = generatedApplications
+  .filter((a) => a.status === 'Selected')
+  .map((app, idx) => {
+    // Pipeline Distribution of 312 Selected Candidates:
+    // idx % 5 == 0 -> 'Offer Accepted' (62 items)
+    // idx % 5 == 1 -> 'Joining Soon' (62 items)
+    // idx % 5 == 2 -> 'Ongoing' (63 items)
+    // idx % 5 == 3 -> 'Completed' (63 items)
+    // idx % 5 == 4 -> 'Not Joined' (62 items)
+    let status: AdminPlacementItem['status'] = 'Offer Accepted';
+    const mod = idx % 5;
+    if (mod === 0) status = 'Offer Accepted';
+    else if (mod === 1) status = 'Joining Soon';
+    else if (mod === 2) status = 'Ongoing';
+    else if (mod === 3) status = 'Completed';
+    else if (mod === 4) status = 'Not Joined';
+
+    const selectionDay = (idx % 12) + 1;
+    const selectionDate = `${selectionDay < 10 ? '0' + selectionDay : selectionDay} Aug 2026`;
+    const joiningDate = status === 'Joining Soon' ? '01 Sep 2026' : status === 'Ongoing' ? '15 Aug 2026' : status === 'Completed' ? '01 May 2026' : '01 Sep 2026';
+    const expectedEndDate = status === 'Completed' ? '01 Nov 2026' : '28 Feb 2027';
+
+    return {
+      id: `plc-${idx + 1}`,
+      applicationId: app.id,
+      studentId: app.studentId,
+      candidateName: app.candidateName,
+      studentEmail: app.studentEmail,
+      avatarInitials: app.avatarInitials,
+      companyId: app.companyId,
+      companyName: app.companyName,
+      companyLogo: app.companyLogo,
+      internshipId: app.internshipId,
+      internshipTitle: app.internshipTitle,
+      selectionDate,
+      offerDate: selectionDate,
+      offerAcceptanceDate: `${selectionDay + 1} Aug 2026`,
+      joiningDate,
+      expectedEndDate,
+      duration: app.duration || '6 Months',
+      stipend: app.stipend || '₹35,000 / month',
+      stipendNumeric: 35000,
+      status,
+      workLocation: app.location || 'Bengaluru',
+      workMode: app.workMode || 'Remote',
+      reportingContact: 'Priya Mehta (Talent Acquisition Lead • hr@partner.com)',
+      mentorFeedback: status === 'Completed' ? 'Exceeded expectations across all agile sprint deliverables. Promoted to full-time candidate pool.' : undefined,
+      performanceRating: status === 'Completed' ? '4.9 / 5.0' : undefined,
+    };
+  });
 
 // 5. Generate 64 Faculty Mentors
 export const generatedFaculty: AdminFacultyItem[] = Array.from({ length: 64 }, (_, i) => {
