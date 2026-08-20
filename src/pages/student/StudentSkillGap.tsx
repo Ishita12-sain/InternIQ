@@ -31,7 +31,7 @@ export const StudentSkillGap: React.FC = () => {
           type: 'Video',
           platform: 'YouTube (freeCodeCamp)',
           durationOrTime: '45 mins',
-          url: 'https://www.youtube.com/watch?v=-MTSQjw51EQ',
+          url: 'https://www.youtube.com/watch?v=GZvSYJDk-us',
         },
         {
           id: 'r2',
