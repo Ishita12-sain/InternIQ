@@ -1,120 +1,90 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { RoleType, User } from '../types/auth';
-import {
-  loginApi,
-  getMeApi,
-  getStoredToken,
-  getStoredUser,
-  setStoredToken,
-  setStoredUser,
-  removeStoredToken,
-  removeStoredUser,
-} from '../services/auth.service';
+import { authenticateUser } from '../utils/authStorage';
 
 interface AuthContextType {
   user: User | null;
   role: RoleType | null;
-  token: string | null;
-  isLoading: boolean;
   login: (
     email: string,
     password: string,
-    selectedRole?: RoleType
-  ) => Promise<User>;
+    selectedRole: RoleType
+  ) => Promise<void>;
   logout: () => void;
-  refreshUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(() => getStoredToken());
-  const [user, setUser] = useState<User | null>(() => getStoredUser());
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const savedUser = localStorage.getItem('interniq_active_user');
+      if (savedUser) {
+        return JSON.parse(savedUser);
+      }
+    } catch (error) {
+      console.warn('Failed to load saved user:', error);
+    }
+    return null;
+  });
 
-  // Restore authenticated session on mount via /api/auth/me
+  const role = user?.role ?? null;
+
   useEffect(() => {
-    let isMounted = true;
-
-    const restoreSession = async () => {
-      const savedToken = getStoredToken();
-      if (!savedToken) {
-        if (isMounted) {
-          setUser(null);
-          setToken(null);
-          setIsLoading(false);
-        }
-        return;
+    try {
+      if (user) {
+        localStorage.setItem('interniq_active_user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('interniq_active_user');
       }
-
-      try {
-        const remoteUser = await getMeApi(savedToken);
-        if (isMounted) {
-          if (remoteUser) {
-            setUser(remoteUser);
-            setToken(savedToken);
-          } else {
-            setUser(null);
-            setToken(null);
-          }
-        }
-      } catch (err) {
-        console.warn('Session verification with /api/auth/me failed:', err);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    restoreSession();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const role: RoleType | null = user ? user.role : null;
+    } catch (error) {
+      console.warn('Failed to save auth user:', error);
+    }
+  }, [user]);
 
   const login = async (
     email: string,
     password: string,
-    _selectedRole?: RoleType
-  ): Promise<User> => {
-    const { user: authenticatedUser, accessToken } = await loginApi({
-      email: email.trim(),
-      password,
-    });
+    selectedRole: RoleType
+  ): Promise<void> => {
+    // 1. Validate email is present
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      throw new Error('Email address is required');
+    }
+    if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
+      throw new Error('Please enter a valid email address');
+    }
+
+    // 2. Validate password is present
+    if (!password) {
+      throw new Error('Password is required');
+    }
+
+    // 3. Simulate realistic network delay (300ms)
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // 4. Authenticate password against database / stored accounts / default credentials
+    // If the password is wrong, authenticateUser throws: Error('Invalid password')
+    const authenticatedUser = await authenticateUser(trimmedEmail, password, selectedRole);
+
+    // 5. Generate mock access token and save active session only on success
+    const accessToken = `jwt_token_${authenticatedUser.role}_${Date.now().toString(36)}`;
+    try {
+      localStorage.setItem('interniq_access_token', accessToken);
+      localStorage.setItem('interniq_active_user', JSON.stringify(authenticatedUser));
+    } catch (error) {
+      console.warn('Failed to persist login session:', error);
+    }
 
     setUser(authenticatedUser);
-    setToken(accessToken);
-    setStoredToken(accessToken);
-    setStoredUser(authenticatedUser);
-
-    return authenticatedUser;
   };
 
   const logout = () => {
     setUser(null);
-    setToken(null);
-    removeStoredToken();
-    removeStoredUser();
-  };
-
-  const refreshUser = async (): Promise<User | null> => {
-    const currentToken = token || getStoredToken();
-    if (!currentToken) return null;
-
-    try {
-      const refreshed = await getMeApi(currentToken);
-      if (refreshed) {
-        setUser(refreshed);
-      }
-      return refreshed;
-    } catch {
-      return null;
-    }
+    localStorage.removeItem('interniq_active_user');
+    localStorage.removeItem('interniq_access_token');
   };
 
   return (
@@ -122,11 +92,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         user,
         role,
-        token,
-        isLoading,
         login,
         logout,
-        refreshUser,
       }}
     >
       {children}

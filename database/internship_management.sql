@@ -742,10 +742,10 @@ COPY public.students (student_id, user_id, college_id, course, year, phone, cgpa
 --
 
 COPY public.users (user_id, name, email, password_hash, role, created_at) FROM stdin;
-1	Test Student	student@test.com	test123	STUDENT	2026-08-19 11:10:31.226197
-3	Tech Solutions	company@test.com	test123	COMPANY	2026-08-19 11:26:09.01514
-4	Prof. Rahul Sharma	faculty@test.com	test123	FACULTY	2026-08-19 11:28:18.067974
-5	System Admin	admin@test.com	test123	ADMIN	2026-08-19 11:30:35.544061
+1	Test Student	student@test.com	$2b$10$PD.Nm2soFVsDfUpRPjTAVOU5WChU4bgOGJ2Ng8V4fxdYPkx2olUG2	STUDENT	2026-08-19 11:10:31.226197
+3	Tech Solutions	company@test.com	$2b$10$PD.Nm2soFVsDfUpRPjTAVOU5WChU4bgOGJ2Ng8V4fxdYPkx2olUG2	COMPANY	2026-08-19 11:26:09.01514
+4	Prof. Rahul Sharma	faculty@test.com	$2b$10$PD.Nm2soFVsDfUpRPjTAVOU5WChU4bgOGJ2Ng8V4fxdYPkx2olUG2	FACULTY	2026-08-19 11:28:18.067974
+5	System Admin	admin@test.com	$2b$10$PD.Nm2soFVsDfUpRPjTAVOU5WChU4bgOGJ2Ng8V4fxdYPkx2olUG2	ADMIN	2026-08-19 11:30:35.544061
 \.
 
 

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { FacultySidebar } from '../../components/faculty/FacultySidebar';
 import { FacultyHeader } from '../../components/faculty/FacultyHeader';
 import { useSettings } from '../../context/SettingsContext';
+import { updateAccountPassword } from '../../utils/authStorage';
+import { useAuth } from '../../context/AuthContext';
 import {
   Lock,
   Smartphone,
@@ -20,6 +22,7 @@ import {
 export const FacultySecuritySettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user } = useAuth();
   const { settings, updateSecurity } = useSettings();
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -99,6 +102,12 @@ export const FacultySecuritySettingsPage: React.FC = () => {
         setPasswordError('Please meet all password strength requirements.');
       }
       return;
+    }
+
+    if (user?.email) {
+      updateAccountPassword(user.email, newPassword);
+    } else {
+      updateAccountPassword('faculty@interniq.edu', newPassword);
     }
 
     // Success update logic (clean abstraction)

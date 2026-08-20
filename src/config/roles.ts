@@ -48,30 +48,38 @@ export const ROLE_OPTIONS: UserRoleOption[] = [
   }
 ];
 
-export const MOCK_USERS: Record<RoleType, { email: string; name: string; department?: string; companyName?: string }> = {
+export const MOCK_USERS: Record<
+  RoleType,
+  { email: string; name: string; department?: string; companyName?: string; password?: string }
+> = {
   student: {
     email: 'student@interniq.edu',
     name: 'Aarav Sharma',
-    department: 'Computer Science & Engineering'
+    department: 'Computer Science & Engineering',
+    password: 'password123',
   },
   company: {
     email: 'recruiter@techcorp.com',
     name: 'Sarah Jenkins',
-    companyName: 'TechCorp Solutions'
+    companyName: 'TechCorp Solutions',
+    password: 'password123',
   },
   faculty: {
     email: 'faculty@interniq.edu',
     name: 'Dr. Rajesh Verma',
-    department: 'Information Technology'
+    department: 'Information Technology',
+    password: 'password123',
   },
   tnp: {
     email: 'tnp@interniq.edu',
     name: 'Prof. Meenakshi Sundaram',
-    department: 'Training & Placement Office'
+    department: 'Training & Placement Office',
+    password: 'password123',
   },
   admin: {
     email: 'admin@interniq.edu',
     name: 'Dr. K. S. Kulkarni',
-    department: 'Head of Institution'
-  }
+    department: 'Head of Institution',
+    password: 'password123',
+  },
 };

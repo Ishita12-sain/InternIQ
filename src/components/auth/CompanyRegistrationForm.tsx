@@ -4,6 +4,8 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Building2, Mail, Lock, User, Phone, Globe, MapPin, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
+import { saveRegisteredUser, validatePasswordSecurity } from '../../utils/authStorage';
+
 export const CompanyRegistrationForm: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -52,8 +54,11 @@ export const CompanyRegistrationForm: React.FC = () => {
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+    } else {
+      const passSec = validatePasswordSecurity(formData.password);
+      if (!passSec.isValid && passSec.error) {
+        newErrors.password = passSec.error;
+      }
     }
 
     if (!formData.confirmPassword) {
@@ -74,11 +79,21 @@ export const CompanyRegistrationForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate() || isLoading) return;
 
     setIsLoading(true);
+
+    // Save registered user account for subsequent logins
+    await saveRegisteredUser({
+      name: formData.contactPerson.trim(),
+      email: formData.email.trim(),
+      password: formData.password,
+      role: 'company',
+      companyName: formData.companyName.trim(),
+      phone: formData.phone.trim(),
+    });
 
     setTimeout(() => {
       setIsLoading(false);

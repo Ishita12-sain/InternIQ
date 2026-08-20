@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle2, AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { updateAccountPassword } from '../../utils/authStorage';
 
 export const ResetPasswordPage: React.FC = () => {
   const navigate = useNavigate();
@@ -53,7 +54,7 @@ export const ResetPasswordPage: React.FC = () => {
 
   const isFormValid = isMinLength && hasUppercase && hasLowercase && hasNumber && hasSpecial && isMatch;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -67,6 +68,18 @@ export const ResetPasswordPage: React.FC = () => {
     }
 
     setIsLoading(true);
+
+    if (token) {
+      try {
+        const decoded = atob(token);
+        const resetEmail = decoded.split(':')[0];
+        if (resetEmail) {
+          await updateAccountPassword(resetEmail, newPassword);
+        }
+      } catch (e) {
+        console.warn('Failed to parse reset token email:', e);
+      }
+    }
 
     setTimeout(() => {
       setIsLoading(false);

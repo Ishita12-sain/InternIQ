@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { TPSidebar } from '../../components/tp/TPSidebar';
 import { TPHeader } from '../../components/tp/TPHeader';
 import { useSettings } from '../../context/SettingsContext';
+import { updateAccountPassword } from '../../utils/authStorage';
+import { useAuth } from '../../context/AuthContext';
 import {
   User,
   Building2,
@@ -302,6 +304,7 @@ export const TPProfilePage: React.FC = () => {
 export const TPSettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user } = useAuth();
   const { settings, updateNotifications, setTheme } = useSettings();
 
   // Toast & Modal State
@@ -347,7 +350,7 @@ export const TPSettingsPage: React.FC = () => {
   };
 
   // Change Password Handler
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPassword) {
       triggerToast('Current password is required.');
@@ -362,10 +365,20 @@ export const TPSettingsPage: React.FC = () => {
       return;
     }
 
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    triggerToast('Password updated successfully');
+    try {
+      if (user?.email) {
+        await updateAccountPassword(user.email, newPassword);
+      } else {
+        await updateAccountPassword('tnp@interniq.edu', newPassword);
+      }
+
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      triggerToast('Password updated successfully');
+    } catch (err) {
+      triggerToast(err instanceof Error ? err.message : 'Failed to update password');
+    }
   };
 
   const handleSignOutConfirm = () => {

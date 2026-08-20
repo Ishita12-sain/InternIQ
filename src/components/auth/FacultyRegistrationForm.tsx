@@ -4,6 +4,8 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { User, Mail, Lock, Phone, CheckCircle2, Eye, EyeOff, IdCard } from 'lucide-react';
 
+import { saveRegisteredUser, validatePasswordSecurity } from '../../utils/authStorage';
+
 export const FacultyRegistrationForm: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -50,8 +52,11 @@ export const FacultyRegistrationForm: React.FC = () => {
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+    } else {
+      const passSec = validatePasswordSecurity(formData.password);
+      if (!passSec.isValid && passSec.error) {
+        newErrors.password = passSec.error;
+      }
     }
 
     if (!formData.confirmPassword) {
@@ -68,11 +73,23 @@ export const FacultyRegistrationForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate() || isLoading) return;
 
     setIsLoading(true);
+
+    // Save registered user account for subsequent logins
+    await saveRegisteredUser({
+      name: `Prof. ${formData.fullName.trim()}`,
+      email: formData.email.trim(),
+      password: formData.password,
+      role: 'faculty',
+      department: formData.department.trim(),
+      employeeId: formData.employeeId.trim(),
+      phone: formData.phone.trim(),
+      designation: formData.designation.trim(),
+    });
 
     setTimeout(() => {
       setIsLoading(false);
