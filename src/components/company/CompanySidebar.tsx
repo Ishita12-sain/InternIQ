@@ -15,6 +15,7 @@ import {
   X,
   ChevronRight
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface CompanySidebarProps {
   isOpen: boolean;
@@ -24,6 +25,17 @@ interface CompanySidebarProps {
 export const CompanySidebar: React.FC<CompanySidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
+
+  const handleSignOut = () => {
+    logout();
+    navigate('/login', { replace: true });
+    onClose();
+  };
+
+  const displayName = user?.companyName || user?.name || 'TechNova Inc.';
+  const displayEmail = user?.email || 'hr@technova.com';
+  const initials = displayName.split(' ').filter(Boolean).map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'TN';
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard/company', icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -109,15 +121,15 @@ export const CompanySidebar: React.FC<CompanySidebarProps> = ({ isOpen, onClose 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 truncate">
               <div className="w-9 h-9 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-2xs">
-                TN
+                {initials}
               </div>
               <div className="truncate text-left">
-                <p className="text-xs font-bold text-[#0f172a] truncate">TechNova Inc.</p>
-                <p className="text-[11px] text-[#64748b] truncate">hr@technova.com</p>
+                <p className="text-xs font-bold text-[#0f172a] truncate">{displayName}</p>
+                <p className="text-[11px] text-[#64748b] truncate">{displayEmail}</p>
               </div>
             </div>
             <button
-              onClick={() => navigate('/login')}
+              onClick={handleSignOut}
               title="Sign Out"
               className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
             >

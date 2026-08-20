@@ -4,6 +4,7 @@ import { Menu, Bell, LogOut } from 'lucide-react';
 import { NotificationDropdown } from '../student/NotificationDropdown';
 import { useNotification } from '../../context/NotificationContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface AdminHeaderProps {
   onOpenSidebar: () => void;
@@ -20,6 +21,14 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotification();
   const { settings } = useSettings();
+  const { user, logout } = useAuth();
+
+  const handleSignOut = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
+
+  const displayName = user?.name || 'Administrator';
 
   const dropdownNotifications = notifications.map((n) => ({
     id: n.id,
@@ -38,7 +47,6 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
       else if (targetNotif.studentId) navigate(`/admin/students/${targetNotif.studentId}`);
       else if (targetNotif.internshipId) navigate(`/admin/internships/${targetNotif.internshipId}`);
       else if (targetNotif.verificationId) navigate(`/admin/verifications/${targetNotif.verificationId}`);
-      else navigate('/admin/notifications');
     }
   };
 
@@ -56,7 +64,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         {/* Brand & Page Title */}
         <div className="flex items-center space-x-3 text-left">
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-black text-xs tracking-tighter shrink-0 shadow-2xs">
-            IQ
+            AD
           </div>
           <div>
             <h1 className="text-lg font-bold text-[#0f172a] leading-none">{title}</h1>
@@ -69,8 +77,8 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         {/* Notification Bell */}
         <button
           onClick={() => setIsNotificationsOpen((prev) => !prev)}
-          className="relative p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          title="Admin Notifications"
+          className="relative p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-blue-100 focus:outline-none"
+          title="System Notifications"
         >
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
@@ -87,31 +95,31 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           onNotificationClick={handleNotificationClick}
         />
 
-        {/* Admin Avatar & Profile Button */}
+        {/* Admin Avatar & Profile */}
         <div
-          onClick={() => navigate('/admin/settings')}
+          onClick={() => navigate('/admin/profile')}
           className="flex items-center space-x-2.5 pl-2 border-l border-slate-200 cursor-pointer hover:opacity-80 transition-opacity"
-          title="System Admin Profile Settings"
+          title="Administrator Profile"
         >
           {settings.adminProfile.photoUrl ? (
             <img
               src={settings.adminProfile.photoUrl}
-              alt={settings.adminProfile.name}
+              alt="Admin Profile"
               className="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-300 shadow-2xs"
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-[#0f172a] text-blue-400 font-extrabold text-xs flex items-center justify-center border border-slate-700 shadow-2xs shrink-0">
-              {settings.adminProfile.avatarInitials || 'SU'}
+            <div className="w-8 h-8 rounded-full bg-[#2563eb] text-white font-extrabold text-xs flex items-center justify-center border border-blue-400 shadow-2xs shrink-0">
+              {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AD'}
             </div>
           )}
           <span className="text-xs font-bold text-[#0f172a] hidden md:inline-block">
-            {settings.adminProfile.name}
+            {displayName}
           </span>
         </div>
 
         {/* Quick Sign Out */}
         <button
-          onClick={() => navigate('/login')}
+          onClick={handleSignOut}
           title="Sign Out"
           className="hidden sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
         >

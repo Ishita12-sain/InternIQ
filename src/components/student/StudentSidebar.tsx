@@ -16,6 +16,7 @@ import {
   X,
   ChevronRight
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface StudentSidebarProps {
   isOpen: boolean;
@@ -25,6 +26,25 @@ interface StudentSidebarProps {
 export const StudentSidebar: React.FC<StudentSidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
+
+  const handleSignOut = () => {
+    logout();
+    navigate('/login', { replace: true });
+    onClose();
+  };
+
+  const displayName = user?.name || 'Student';
+  const displayEmail = user?.email || 'student@interniq.edu';
+  const initials = user?.name
+    ? user.name
+        .split(' ')
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : 'ST';
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard/student', icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -111,15 +131,15 @@ export const StudentSidebar: React.FC<StudentSidebarProps> = ({ isOpen, onClose 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 truncate">
               <div className="w-9 h-9 rounded-full bg-blue-100 text-[#2563eb] font-bold flex items-center justify-center text-xs shrink-0">
-                ST
+                {initials}
               </div>
               <div className="truncate text-left">
-                <p className="text-xs font-bold text-[#0f172a] truncate">Aarav Sharma</p>
-                <p className="text-[11px] text-[#64748b] truncate">student@interniq.edu</p>
+                <p className="text-xs font-bold text-[#0f172a] truncate">{displayName}</p>
+                <p className="text-[11px] text-[#64748b] truncate">{displayEmail}</p>
               </div>
             </div>
             <button
-              onClick={() => navigate('/login')}
+              onClick={handleSignOut}
               title="Sign Out"
               className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
             >

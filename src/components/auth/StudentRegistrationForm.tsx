@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { Mail, Lock, User, Phone, Building2, BookOpen, GraduationCap, ArrowRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Phone, Building2, BookOpen, GraduationCap, ArrowRight, CheckCircle2, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { registerApi } from '../../services/auth.service';
 
 export const StudentRegistrationForm: React.FC = () => {
   const navigate = useNavigate();
@@ -65,21 +66,33 @@ export const StudentRegistrationForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validate()) return;
 
     setIsLoading(true);
+    setErrors({});
 
-    setTimeout(() => {
+    try {
+      await registerApi({
+        name: formData.fullName.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+        role: 'STUDENT',
+      });
+
       setIsLoading(false);
       setIsSuccess(true);
 
       setTimeout(() => {
         navigate('/dashboard/student');
       }, 1500);
-    }, 800);
+    } catch (err: unknown) {
+      setIsLoading(false);
+      const message = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+      setErrors({ general: message });
+    }
   };
 
   if (isSuccess) {
@@ -103,10 +116,17 @@ export const StudentRegistrationForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 text-left">
+      {errors.general && (
+        <div className="p-3.5 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-2.5">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
+          <span className="font-medium leading-relaxed">{errors.general}</span>
+        </div>
+      )}
+
       <Input
         label="Full Name"
         type="text"
-        placeholder="e.g. Aarav Sharma"
+        placeholder="e.g. Disha Ubale"
         value={formData.fullName}
         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
         error={errors.fullName}

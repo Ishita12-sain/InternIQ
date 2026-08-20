@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StudentSidebar } from '../../components/student/StudentSidebar';
 import { DashboardHeader } from '../../components/student/DashboardHeader';
 import { ProfileHeader } from '../../components/student/ProfileHeader';
@@ -13,16 +13,18 @@ import type { ProjectItem } from '../../components/student/ProjectsSection';
 import { ResumeSection } from '../../components/student/ResumeSection';
 import { ProfileCompletion } from '../../components/student/ProfileCompletion';
 import { X, Save } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export const StudentProfile: React.FC = () => {
+  const { user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [profile, setProfile] = useState<StudentProfileData>(() => {
     const savedPhoto = localStorage.getItem('interniq_student_photo');
     return {
-      name: 'Aarav Sharma',
-      email: 'student@interniq.edu',
+      name: user?.name || 'Student',
+      email: user?.email || 'student@interniq.edu',
       studentId: 'STU2026-001',
       department: 'Computer Engineering',
       year: '3rd Year',
@@ -33,10 +35,20 @@ export const StudentProfile: React.FC = () => {
       college: 'ABC Institute of Technology',
       cgpa: '8.4 / 10',
       graduationYear: '2027',
-      linkedinUrl: 'https://www.linkedin.com/in/aarav-sharma',
+      linkedinUrl: 'https://www.linkedin.com/in/student',
       photoUrl: savedPhoto || undefined,
     };
   });
+
+  useEffect(() => {
+    if (user) {
+      setProfile((prev) => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user]);
 
   const handlePhotoUpload = (photoUrl: string) => {
     setProfile((prev) => ({ ...prev, photoUrl }));

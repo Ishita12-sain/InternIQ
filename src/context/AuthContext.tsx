@@ -1,74 +1,142 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { RoleType, User } from '../types/auth';
-import { MOCK_USERS } from '../config/roles';
+import {
+  loginApi,
+  getMeApi,
+  getStoredToken,
+  getStoredUser,
+  setStoredToken,
+  setStoredUser,
+  removeStoredToken,
+  removeStoredUser,
+} from '../services/auth.service';
 
-interface AuthContextType {
+export interface LoginCredentials {
+  email: string;
+  password: string;
+  role?: RoleType;
+}
+
+export interface AuthContextType {
   user: User | null;
   role: RoleType | null;
-  login: (role: RoleType) => void;
+  token: string | null;
+  isLoading: boolean;
+  login: (credentials: LoginCredentials | RoleType) => Promise<User>;
   logout: () => void;
+  refreshUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const saved = localStorage.getItem('interniq_active_user');
-      if (saved) return JSON.parse(saved);
-    } catch (err) {
-      console.warn('Failed to parse auth user from localStorage', err);
-    }
-    return {
-      id: 'usr-default',
-      name: MOCK_USERS.faculty.name,
-      email: MOCK_USERS.faculty.email,
-      role: 'faculty',
-      department: MOCK_USERS.faculty.department,
-    };
-  });
+  const [token, setToken] = useState<string | null>(() => getStoredToken());
+  const [user, setUser] = useState<User | null>(() => getStoredUser());
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const role = user ? user.role : null;
-
+  // Sync session on mount via /api/auth/me
   useEffect(() => {
-    try {
-      if (user) {
-        localStorage.setItem('interniq_active_user', JSON.stringify(user));
-      } else {
-        localStorage.removeItem('interniq_active_user');
-      }
-    } catch (err) {
-      console.warn('Failed to sync auth state to localStorage', err);
-    }
-  }, [user]);
+    let isMounted = true;
 
-  const login = (selectedRole: RoleType) => {
-    const mock = MOCK_USERS[selectedRole];
-    const newUser: User = {
-      id: `usr-${selectedRole}`,
-      name: mock.name,
-      email: mock.email,
-      role: selectedRole,
-      department: mock.department,
-      companyName: mock.companyName,
+    const restoreSession = async () => {
+      const savedToken = getStoredToken();
+      if (!savedToken) {
+        if (isMounted) {
+          setUser(null);
+          setToken(null);
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const remoteUser = await getMeApi(savedToken);
+        if (isMounted) {
+          if (remoteUser) {
+            setUser(remoteUser);
+            setToken(savedToken);
+          } else {
+            setUser(null);
+            setToken(null);
+          }
+        }
+      } catch (err) {
+        console.warn('Session verification with /api/auth/me failed:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
     };
-    setUser(newUser);
+
+    restoreSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const role: RoleType | null = user ? user.role : null;
+
+  const login = async (credentials: LoginCredentials | RoleType): Promise<User> => {
+    if (typeof credentials === 'string') {
+      throw new Error('Please provide email and password to sign in.');
+    }
+
+    const { user: authenticatedUser, accessToken } = await loginApi({
+      email: credentials.email,
+      password: credentials.password,
+    });
+
+    setUser(authenticatedUser);
+    setToken(accessToken);
+    setStoredToken(accessToken);
+    setStoredUser(authenticatedUser);
+
+    return authenticatedUser;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('interniq_active_user');
+    setToken(null);
+    removeStoredToken();
+    removeStoredUser();
+  };
+
+  const refreshUser = async (): Promise<User | null> => {
+    const currentToken = token || getStoredToken();
+    if (!currentToken) return null;
+
+    try {
+      const refreshed = await getMeApi(currentToken);
+      if (refreshed) {
+        setUser(refreshed);
+      }
+      return refreshed;
+    } catch {
+      return null;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        role,
+        token,
+        isLoading,
+        login,
+        logout,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

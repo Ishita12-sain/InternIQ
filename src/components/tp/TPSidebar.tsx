@@ -17,6 +17,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface TPSidebarProps {
   isOpen: boolean;
@@ -27,6 +28,19 @@ export const TPSidebar: React.FC<TPSidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { settings } = useSettings();
+  const { user, logout } = useAuth();
+
+  const handleSignOut = () => {
+    logout();
+    navigate('/login', { replace: true });
+    onClose();
+  };
+
+  const displayName = user?.name || 'T&P Officer';
+  const displayEmail = user?.email || 'tp@interniq.edu';
+  const initials = user?.name
+    ? user.name.split(' ').filter(Boolean).map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    : 'TP';
 
   const navItems = [
     { label: 'Dashboard', path: '/tp/dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -124,21 +138,21 @@ export const TPSidebar: React.FC<TPSidebarProps> = ({ isOpen, onClose }) => {
               {settings.adminProfile.photoUrl ? (
                 <img
                   src={settings.adminProfile.photoUrl}
-                  alt={settings.adminProfile.name}
+                  alt={displayName}
                   className="w-9 h-9 rounded-xl object-cover shrink-0 border border-slate-200 shadow-2xs"
                 />
               ) : (
                 <div className="w-9 h-9 rounded-xl bg-[#2563eb] text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-2xs">
-                  TP
+                  {initials}
                 </div>
               )}
               <div className="truncate text-left">
-                <p className="text-xs font-bold text-[#0f172a] truncate">T&P Officer</p>
-                <p className="text-[11px] text-[#64748b] truncate">tp@interniq.edu</p>
+                <p className="text-xs font-bold text-[#0f172a] truncate">{displayName}</p>
+                <p className="text-[11px] text-[#64748b] truncate">{displayEmail}</p>
               </div>
             </div>
             <button
-              onClick={() => navigate('/login')}
+              onClick={handleSignOut}
               title="Sign Out"
               className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
             >
