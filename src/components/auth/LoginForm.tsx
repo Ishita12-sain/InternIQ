@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { RoleType, LoginFormData } from '../../types/auth';
-import { MOCK_USERS } from '../../config/roles';
 import { RoleSelector } from './RoleSelector';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { Mail, Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ShieldCheck, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const LoginForm: React.FC = () => {
@@ -17,8 +16,8 @@ export const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState<LoginFormData>({
-    email: MOCK_USERS.student.email,
-    password: 'password123',
+    email: '',
+    password: '',
     role: 'student',
     rememberMe: true,
   });
@@ -26,6 +25,7 @@ export const LoginForm: React.FC = () => {
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
+    general?: string;
   }>({});
 
   const handleRoleChange = (role: RoleType) => {
@@ -33,7 +33,6 @@ export const LoginForm: React.FC = () => {
     setFormData((prev) => ({
       ...prev,
       role,
-      email: MOCK_USERS[role]?.email || prev.email,
     }));
     setErrors({});
   };
@@ -42,6 +41,7 @@ export const LoginForm: React.FC = () => {
     const newErrors: {
       email?: string;
       password?: string;
+      general?: string;
     } = {};
 
     if (!formData.email.trim()) {
@@ -52,8 +52,6 @@ export const LoginForm: React.FC = () => {
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
     }
 
     setErrors(newErrors);
@@ -69,13 +67,13 @@ export const LoginForm: React.FC = () => {
     setErrors({});
 
     try {
-      await login(
+      const authenticatedUser = await login(
         formData.email,
         formData.password || '',
         selectedRole
       );
 
-      // Route mapping for each role
+      // Route mapping according to backend role
       const targetRoutes: Record<RoleType, string> = {
         student: '/dashboard/student',
         company: '/dashboard/company',
@@ -84,15 +82,17 @@ export const LoginForm: React.FC = () => {
         admin: '/dashboard/admin',
       };
 
-      navigate(targetRoutes[selectedRole] || `/dashboard/${selectedRole}`);
+      const destination =
+        targetRoutes[authenticatedUser.role] || `/dashboard/${authenticatedUser.role}`;
+      navigate(destination);
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
-          : 'Failed to sign in. Please try again.';
+          : 'Failed to sign in. Please check your credentials.';
 
       setErrors({
-        password: message,
+        general: message,
       });
     } finally {
       setIsLoading(false);
@@ -101,6 +101,14 @@ export const LoginForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 text-left">
+      {/* Real Backend Error Banner */}
+      {errors.general && (
+        <div className="p-3.5 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl flex items-start space-x-2.5 animate-in fade-in">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
+          <span className="font-medium leading-relaxed">{errors.general}</span>
+        </div>
+      )}
+
       {/* Email Input */}
       <Input
         label="Email Address"
@@ -110,7 +118,9 @@ export const LoginForm: React.FC = () => {
         value={formData.email}
         onChange={(e) => {
           setFormData({ ...formData, email: e.target.value });
-          if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+          if (errors.email || errors.general) {
+            setErrors((prev) => ({ ...prev, email: undefined, general: undefined }));
+          }
         }}
         error={errors.email}
         leftIcon={<Mail className="w-4 h-4 text-slate-400" />}
@@ -127,7 +137,9 @@ export const LoginForm: React.FC = () => {
           value={formData.password}
           onChange={(e) => {
             setFormData({ ...formData, password: e.target.value });
-            if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+            if (errors.password || errors.general) {
+              setErrors((prev) => ({ ...prev, password: undefined, general: undefined }));
+            }
           }}
           error={errors.password}
           leftIcon={<Lock className="w-4 h-4 text-slate-400" />}

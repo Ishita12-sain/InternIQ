@@ -1,98 +1,120 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { RoleType, User } from '../types/auth';
-import { MOCK_USERS } from '../config/roles';
+import {
+  loginApi,
+  getMeApi,
+  getStoredToken,
+  getStoredUser,
+  setStoredToken,
+  setStoredUser,
+  removeStoredToken,
+  removeStoredUser,
+} from '../services/auth.service';
 
 interface AuthContextType {
   user: User | null;
   role: RoleType | null;
+  token: string | null;
+  isLoading: boolean;
   login: (
     email: string,
     password: string,
-    selectedRole: RoleType
-  ) => Promise<void>;
+    selectedRole?: RoleType
+  ) => Promise<User>;
   logout: () => void;
+  refreshUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const savedUser = localStorage.getItem('interniq_active_user');
-      if (savedUser) {
-        return JSON.parse(savedUser);
-      }
-    } catch (error) {
-      console.warn('Failed to load saved user:', error);
-    }
-    return null;
-  });
+  const [token, setToken] = useState<string | null>(() => getStoredToken());
+  const [user, setUser] = useState<User | null>(() => getStoredUser());
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const role = user?.role ?? null;
-
+  // Restore authenticated session on mount via /api/auth/me
   useEffect(() => {
-    try {
-      if (user) {
-        localStorage.setItem('interniq_active_user', JSON.stringify(user));
-      } else {
-        localStorage.removeItem('interniq_active_user');
+    let isMounted = true;
+
+    const restoreSession = async () => {
+      const savedToken = getStoredToken();
+      if (!savedToken) {
+        if (isMounted) {
+          setUser(null);
+          setToken(null);
+          setIsLoading(false);
+        }
+        return;
       }
-    } catch (error) {
-      console.warn('Failed to save auth user:', error);
-    }
-  }, [user]);
+
+      try {
+        const remoteUser = await getMeApi(savedToken);
+        if (isMounted) {
+          if (remoteUser) {
+            setUser(remoteUser);
+            setToken(savedToken);
+          } else {
+            setUser(null);
+            setToken(null);
+          }
+        }
+      } catch (err) {
+        console.warn('Session verification with /api/auth/me failed:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    restoreSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const role: RoleType | null = user ? user.role : null;
 
   const login = async (
     email: string,
     password: string,
-    selectedRole: RoleType
-  ): Promise<void> => {
-    // 1. Validate email is present
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) {
-      throw new Error('Email address is required');
-    }
-    if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
-      throw new Error('Please enter a valid email address');
-    }
+    _selectedRole?: RoleType
+  ): Promise<User> => {
+    const { user: authenticatedUser, accessToken } = await loginApi({
+      email: email.trim(),
+      password,
+    });
 
-    // 2. Validate password is at least 6 characters
-    if (!password || password.length < 6) {
-      throw new Error('Password must be at least 6 characters');
-    }
+    setUser(authenticatedUser);
+    setToken(accessToken);
+    setStoredToken(accessToken);
+    setStoredUser(authenticatedUser);
 
-    // 3. Simulate short loading delay (350ms)
-    await new Promise((resolve) => setTimeout(resolve, 350));
-
-    // 4. Extract display name from email (e.g. dishaubale90 -> Disha Ubale or Disha Ubale from email prefix)
-    const emailNamePart = trimmedEmail.split('@')[0].replace(/[0-9]/g, '').replace(/[\._]/g, ' ');
-    const formattedName = emailNamePart
-      ? emailNamePart
-          .split(' ')
-          .filter(Boolean)
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ')
-      : `${selectedRole.toUpperCase()} User`;
-
-    const roleMock = MOCK_USERS[selectedRole];
-    const newUser: User = {
-      id: `usr-${selectedRole}-${Date.now().toString(36)}`,
-      name: formattedName || roleMock?.name || `${selectedRole.toUpperCase()} User`,
-      email: trimmedEmail,
-      role: selectedRole,
-      department: roleMock?.department || 'Computer Engineering',
-      companyName: roleMock?.companyName,
-    };
-
-    // 5. Save user to state & localStorage
-    setUser(newUser);
+    return authenticatedUser;
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('interniq_active_user');
-    localStorage.removeItem('interniq_access_token');
+    setToken(null);
+    removeStoredToken();
+    removeStoredUser();
+  };
+
+  const refreshUser = async (): Promise<User | null> => {
+    const currentToken = token || getStoredToken();
+    if (!currentToken) return null;
+
+    try {
+      const refreshed = await getMeApi(currentToken);
+      if (refreshed) {
+        setUser(refreshed);
+      }
+      return refreshed;
+    } catch {
+      return null;
+    }
   };
 
   return (
@@ -100,8 +122,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         user,
         role,
+        token,
+        isLoading,
         login,
         logout,
+        refreshUser,
       }}
     >
       {children}

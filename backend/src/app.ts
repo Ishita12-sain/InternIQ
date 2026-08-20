@@ -12,9 +12,13 @@ export const createApp = (): Application => {
   // Middleware: CORS
   app.use(
     cors({
-      origin: config.corsOrigin === '*' ? '*' : config.corsOrigin.split(','),
+      origin:
+        config.corsOrigin === '*'
+          ? '*'
+          : config.corsOrigin.split(',').map((o) => o.trim()),
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true,
     })
   );
 

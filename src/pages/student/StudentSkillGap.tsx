@@ -62,7 +62,7 @@ export const StudentSkillGap: React.FC = () => {
           type: 'Video',
           platform: 'YouTube (React Official Channel / Traversy)',
           durationOrTime: '1 hr 15 mins',
-          url: 'https://react.dev/learn',
+          url: 'https://www.youtube.com/watch?v=w7ejDZ8SWv8',
         },
         {
           id: 'r5',
@@ -124,7 +124,7 @@ export const StudentSkillGap: React.FC = () => {
           type: 'Video',
           platform: 'YouTube (ByteByteGo)',
           durationOrTime: '55 mins',
-          url: 'https://www.youtube.com/c/ByteByteGo',
+          url: 'https://www.youtube.com/watch?v=i53Gi_K3o7I',
         },
         {
           id: 'r11',
