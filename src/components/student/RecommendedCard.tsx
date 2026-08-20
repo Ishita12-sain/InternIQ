@@ -30,12 +30,14 @@ export interface RecommendedInternshipItem {
 
 interface RecommendedCardProps {
   internship: RecommendedInternshipItem;
+  isApplied?: boolean;
   onApply: (internship: RecommendedInternshipItem) => void;
   onViewDetails: (internship: RecommendedInternshipItem) => void;
 }
 
 export const RecommendedCard: React.FC<RecommendedCardProps> = ({
   internship,
+  isApplied = false,
   onApply,
   onViewDetails,
 }) => {
@@ -172,13 +174,23 @@ export const RecommendedCard: React.FC<RecommendedCardProps> = ({
           <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
         </button>
 
-        <button
-          onClick={() => onApply(internship)}
-          className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#2563eb] hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
-        >
-          <span>Apply Now</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
+        {isApplied ? (
+          <button
+            disabled
+            className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold shadow-2xs cursor-not-allowed"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Applied ✓</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => onApply(internship)}
+            className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#2563eb] hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+          >
+            <span>Apply Now</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );

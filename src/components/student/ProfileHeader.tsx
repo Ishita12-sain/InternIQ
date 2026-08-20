@@ -7,6 +7,7 @@ export interface StudentProfileData {
   studentId: string;
   department: string;
   year: string;
+  semester?: string | number;
   phone: string;
   dob: string;
   gender: string;

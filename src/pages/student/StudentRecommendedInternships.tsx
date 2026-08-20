@@ -8,14 +8,21 @@ import type { WorkModeFilter, SortOption } from '../../components/student/Recomm
 import { RecommendedCard } from '../../components/student/RecommendedCard';
 import type { RecommendedInternshipItem } from '../../components/student/RecommendedCard';
 import { RecommendedEmptyState } from '../../components/student/RecommendedEmptyState';
-import { X, CheckCircle2 } from 'lucide-react';
+import { X, CheckCircle2, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { useApplication } from '../../context/ApplicationContext';
 
 export const StudentRecommendedInternships: React.FC = () => {
+  const { applyForInternship, hasStudentApplied, isSubmitting } = useApplication();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMode, setSelectedMode] = useState<WorkModeFilter>('All');
   const [sortBy, setSortBy] = useState<SortOption>('Best Match');
   const [selectedInternship, setSelectedInternship] = useState<RecommendedInternshipItem | null>(null);
+
+  // Application Modal States
+  const [confirmInternship, setConfirmInternship] = useState<RecommendedInternshipItem | null>(null);
+  const [successInternship, setSuccessInternship] = useState<RecommendedInternshipItem | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Mock Realistic Internship Data (6 Internships)
   const mockInternships: RecommendedInternshipItem[] = [
@@ -160,8 +167,37 @@ export const StudentRecommendedInternships: React.FC = () => {
       });
   }, [selectedMode, searchQuery, sortBy]);
 
-  const handleApply = (internship: RecommendedInternshipItem) => {
-    alert(`Successfully applied for "${internship.title}" at ${internship.companyName}!`);
+  const handleApplyClick = (internship: RecommendedInternshipItem) => {
+    setErrorMessage(null);
+    if (hasStudentApplied(internship.id)) {
+      setErrorMessage(`You have already applied for "${internship.title}" at ${internship.companyName}.`);
+      return;
+    }
+    setConfirmInternship(internship);
+  };
+
+  const handleConfirmApplication = async () => {
+    if (!confirmInternship) return;
+    setErrorMessage(null);
+
+    const result = await applyForInternship({
+      id: confirmInternship.id,
+      title: confirmInternship.title,
+      companyName: confirmInternship.companyName,
+      companyLogo: confirmInternship.companyLogo,
+      location: confirmInternship.location,
+      workMode: confirmInternship.workMode,
+      stipend: confirmInternship.stipend,
+      skills: confirmInternship.skills,
+    });
+
+    if (result.success) {
+      const appliedItem = confirmInternship;
+      setConfirmInternship(null);
+      setSuccessInternship(appliedItem);
+    } else {
+      setErrorMessage(result.message);
+    }
   };
 
   const handleSummaryCardClick = (key: RecommendedSummaryCardKey) => {
@@ -229,7 +265,8 @@ export const StudentRecommendedInternships: React.FC = () => {
                   <RecommendedCard
                     key={internship.id}
                     internship={internship}
-                    onApply={handleApply}
+                    isApplied={hasStudentApplied(internship.id)}
+                    onApply={handleApplyClick}
                     onViewDetails={(item) => setSelectedInternship(item)}
                   />
                 ))}
@@ -311,16 +348,141 @@ export const StudentRecommendedInternships: React.FC = () => {
               >
                 Close
               </button>
+              {hasStudentApplied(selectedInternship.id) ? (
+                <button
+                  disabled
+                  className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold shadow-2xs cursor-not-allowed"
+                >
+                  Applied ✓
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    const target = selectedInternship;
+                    setSelectedInternship(null);
+                    handleApplyClick(target);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#2563eb] hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs cursor-pointer"
+                >
+                  Apply Now
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmInternship && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150 text-left">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center space-x-2 text-[#2563eb]">
+                <Sparkles className="w-5 h-5" />
+                <h3 className="text-base font-bold text-[#0f172a]">Apply for Internship?</h3>
+              </div>
               <button
-                onClick={() => {
-                  handleApply(selectedInternship);
-                  setSelectedInternship(null);
-                }}
-                className="px-4 py-2 rounded-xl bg-[#2563eb] hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs cursor-pointer"
+                onClick={() => setConfirmInternship(null)}
+                disabled={isSubmitting}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
               >
-                Apply Now
+                <X className="w-5 h-5" />
               </button>
             </div>
+
+            <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-2">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
+                  {confirmInternship.companyLogo}
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">{confirmInternship.title}</h4>
+                  <p className="text-xs text-blue-600 font-semibold">{confirmInternship.companyName}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-blue-100 text-slate-700">
+                <div><span className="text-slate-400">Location:</span> {confirmInternship.location}</div>
+                <div><span className="text-slate-400">Mode:</span> {confirmInternship.workMode}</div>
+                <div><span className="text-slate-400">Duration:</span> {confirmInternship.duration}</div>
+                <div><span className="text-slate-400">Stipend:</span> {confirmInternship.stipend}</div>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Your profile details, resume, and benchmark skills will be submitted directly to {confirmInternship.companyName}'s recruitment team.
+            </p>
+
+            {errorMessage && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmInternship(null)}
+                disabled={isSubmitting}
+                className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmApplication}
+                disabled={isSubmitting}
+                className="inline-flex items-center space-x-1.5 px-5 py-2.5 rounded-xl bg-[#2563eb] hover:bg-blue-700 text-white text-xs font-bold shadow-2xs transition-colors cursor-pointer disabled:opacity-60"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Submitting application...</span>
+                  </>
+                ) : (
+                  <span>Confirm Application</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Application Success Modal */}
+      {successInternship && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-lg font-extrabold text-slate-900">Application Submitted Successfully!</h3>
+              <p className="text-xs text-slate-500">
+                You have applied for <strong className="text-slate-800">{successInternship.title}</strong> at <strong className="text-blue-600">{successInternship.companyName}</strong>.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-left space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Application Status:</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                  Applied
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Current Stage:</span>
+                <span className="font-semibold text-slate-800">Application Submitted</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setSuccessInternship(null)}
+              className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+            >
+              Done
+            </button>
           </div>
         </div>
       )}

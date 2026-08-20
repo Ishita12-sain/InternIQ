@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard,
   User,
@@ -25,6 +26,18 @@ interface StudentSidebarProps {
 export const StudentSidebar: React.FC<StudentSidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
+
+  const getInitials = (name?: string) => {
+    if (!name) return 'ST';
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard/student', icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -111,15 +124,18 @@ export const StudentSidebar: React.FC<StudentSidebarProps> = ({ isOpen, onClose 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 truncate">
               <div className="w-9 h-9 rounded-full bg-blue-100 text-[#2563eb] font-bold flex items-center justify-center text-xs shrink-0">
-                ST
+                {getInitials(user?.name)}
               </div>
               <div className="truncate text-left">
-                <p className="text-xs font-bold text-[#0f172a] truncate">Aarav Sharma</p>
-                <p className="text-[11px] text-[#64748b] truncate">student@interniq.edu</p>
+                <p className="text-xs font-bold text-[#0f172a] truncate">{user?.name || 'Student'}</p>
+                <p className="text-[11px] text-[#64748b] truncate">{user?.email || 'student@interniq.edu'}</p>
               </div>
             </div>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
               title="Sign Out"
               className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
             >

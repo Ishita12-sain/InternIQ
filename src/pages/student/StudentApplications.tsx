@@ -10,7 +10,10 @@ import type { ApplicationItem } from '../../components/student/ApplicationCard';
 import { ApplicationTimeline } from '../../components/student/ApplicationTimeline';
 import { X, SearchX, RotateCcw, FileText, Clock, Sparkles, CheckCircle2 } from 'lucide-react';
 
+import { useApplication } from '../../context/ApplicationContext';
+
 export const StudentApplications: React.FC = () => {
+  const { applications } = useApplication();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<ApplicationStatusFilter>('All');
@@ -18,85 +21,29 @@ export const StudentApplications: React.FC = () => {
   const [selectedApp, setSelectedApp] = useState<ApplicationItem | null>(null);
   const [highlightedSection, setHighlightedSection] = useState<string | null>(null);
 
-  // Realistic Mock Applications Data (6 Applications)
-  const mockApplications: ApplicationItem[] = [
-    {
-      id: 'app-1',
-      companyName: 'TechNova Solutions',
-      companyLogo: 'TN',
-      role: 'Frontend Developer Intern',
-      appliedDate: '12 Aug 2026',
-      location: 'Bengaluru, KA',
-      internshipType: 'Remote',
-      stipend: '₹25,000 / month',
-      status: 'Shortlisted',
-      skills: ['React', 'TypeScript', 'Tailwind CSS'],
-    },
-    {
-      id: 'app-2',
-      companyName: 'DataSphere Systems',
-      companyLogo: 'DS',
-      role: 'Data Analyst Intern',
-      appliedDate: '10 Aug 2026',
-      location: 'Pune, MH',
-      internshipType: 'Full Time',
-      stipend: '₹20,000 / month',
-      status: 'Under Review',
-      skills: ['SQL', 'Python', 'Excel'],
-    },
-    {
-      id: 'app-3',
-      companyName: 'CreativeLabs',
-      companyLogo: 'CL',
-      role: 'UI/UX Design Intern',
-      appliedDate: '08 Aug 2026',
-      location: 'Mumbai, MH',
-      internshipType: 'Hybrid',
-      stipend: '₹18,000 / month',
-      status: 'Interview Scheduled',
-      skills: ['Figma', 'HTML', 'CSS'],
-    },
-    {
-      id: 'app-4',
-      companyName: 'Apex Cloud Systems',
-      companyLogo: 'AC',
-      role: 'Full Stack Developer Intern',
-      appliedDate: '01 Aug 2026',
-      location: 'Hyderabad, TS',
-      internshipType: 'Remote',
-      stipend: '₹30,000 / month',
-      status: 'Selected',
-      skills: ['React', 'Node.js', 'MongoDB'],
-    },
-    {
-      id: 'app-5',
-      companyName: 'NexGen Infotech',
-      companyLogo: 'NG',
-      role: 'Software Test Engineer Intern',
-      appliedDate: '28 Jul 2026',
-      location: 'Noida, UP',
-      internshipType: 'Full Time',
-      stipend: '₹15,000 / month',
-      status: 'Applied',
-      skills: ['JavaScript', 'QA Testing', 'Git'],
-    },
-    {
-      id: 'app-6',
-      companyName: 'CyberGuard Security',
-      companyLogo: 'CG',
-      role: 'Security Audit Intern',
-      appliedDate: '20 Jul 2026',
-      location: 'Gurugram, HR',
-      internshipType: 'Hybrid',
-      stipend: '₹16,000 / month',
-      status: 'Rejected',
-      skills: ['SQL', 'Linux', 'Security'],
-    },
-  ];
+  // Map Context Applications to ApplicationItem interface
+  const applicationList: ApplicationItem[] = useMemo(() => {
+    return applications.map((app) => ({
+      id: app.id,
+      companyName: app.companyName,
+      companyLogo: app.companyLogo,
+      role: app.internshipTitle,
+      appliedDate: new Date(app.appliedAt).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }),
+      location: app.location,
+      internshipType: app.workMode as any,
+      stipend: app.stipend,
+      status: app.status as any,
+      skills: app.skills,
+    }));
+  }, [applications]);
 
   // Filtering Logic
   const filteredApplications = useMemo(() => {
-    return mockApplications.filter((app) => {
+    return applicationList.filter((app) => {
       if (selectedStatus !== 'All' && app.status !== selectedStatus) {
         return false;
       }
@@ -112,11 +59,11 @@ export const StudentApplications: React.FC = () => {
       }
       return true;
     });
-  }, [mockApplications, selectedStatus, selectedType, searchQuery]);
+  }, [applicationList, selectedStatus, selectedType, searchQuery]);
 
-  const underReviewApps = useMemo(() => mockApplications.filter((a) => a.status === 'Under Review'), [mockApplications]);
-  const shortlistedApps = useMemo(() => mockApplications.filter((a) => a.status === 'Shortlisted' || a.status === 'Interview Scheduled'), [mockApplications]);
-  const selectedApps = useMemo(() => mockApplications.filter((a) => a.status === 'Selected'), [mockApplications]);
+  const underReviewApps = useMemo(() => applicationList.filter((a) => a.status === 'Under Review'), [applicationList]);
+  const shortlistedApps = useMemo(() => applicationList.filter((a) => a.status === 'Shortlisted' || a.status === 'Interview Scheduled'), [applicationList]);
+  const selectedApps = useMemo(() => applicationList.filter((a) => a.status === 'Selected'), [applicationList]);
 
   const handleClearFilters = () => {
     setSearchQuery('');
@@ -125,23 +72,25 @@ export const StudentApplications: React.FC = () => {
   };
 
   const handleSummaryCardClick = (key: SummaryCardKey) => {
-    const targetIdMap: Record<SummaryCardKey, string> = {
-      total: 'all-applications-section',
-      underReview: 'under-review-section',
-      shortlisted: 'shortlisted-section',
-      selected: 'selected-section',
-    };
-
-    const targetId = targetIdMap[key];
-    const element = document.getElementById(targetId);
-
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setHighlightedSection(targetId);
-      setTimeout(() => {
-        setHighlightedSection(null);
-      }, 2000);
+    if (key === 'total') {
+      setSelectedStatus('All');
+      setSelectedType('All');
+    } else if (key === 'underReview') {
+      setSelectedStatus('Under Review');
+    } else if (key === 'shortlisted') {
+      setSelectedStatus('Shortlisted');
+    } else if (key === 'selected') {
+      setSelectedStatus('Selected');
     }
+
+    setHighlightedSection('all-applications-section');
+    const el = document.getElementById('all-applications-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    setTimeout(() => {
+      setHighlightedSection(null);
+    }, 2000);
   };
 
   return (
@@ -167,7 +116,7 @@ export const StudentApplications: React.FC = () => {
 
           {/* 4 Summary Cards */}
           <ApplicationSummary
-            total={mockApplications.length}
+            total={applicationList.length}
             underReview={underReviewApps.length}
             shortlisted={shortlistedApps.length}
             selected={selectedApps.length}

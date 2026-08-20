@@ -2,211 +2,94 @@ import React, { useState } from 'react';
 import { StudentSidebar } from '../../components/student/StudentSidebar';
 import { DashboardHeader } from '../../components/student/DashboardHeader';
 import { InternshipSelector } from '../../components/student/InternshipSelector';
-import type { InternshipSelectorItem } from '../../components/student/InternshipSelector';
 import { TimelineStage } from '../../components/student/TimelineStage';
 import type { StageData } from '../../components/student/TimelineStage';
 import { StageDetails } from '../../components/student/StageDetails';
+import { useApplication } from '../../context/ApplicationContext';
 
 export const StudentTimelinePage: React.FC = () => {
+  const { applications } = useApplication();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedInternshipId, setSelectedInternshipId] = useState('goog-1');
+  const [selectedInternshipId, setSelectedInternshipId] = useState<string>('');
   const [selectedStage, setSelectedStage] = useState<StageData | null>(null);
 
-  // 3 Realistic Mock Internships with Complete Timelines
-  const mockInternships: (InternshipSelectorItem & { stages: StageData[] })[] = [
-    {
-      id: 'goog-1',
-      companyName: 'Google',
-      companyLogo: 'GO',
-      role: 'Software Engineering Intern',
-      currentStage: 'Interview',
-      matchScore: 95,
-      stages: [
-        {
-          id: 'goog-s1',
-          stageName: 'Applied',
-          date: '12 Aug 2026',
-          statusType: 'completed',
-          shortDescription: 'Application submitted successfully via InternIQ',
-          detailedMessage: 'Your resume and application details were received by Google University Recruiting.',
-          nextStep: 'Awaiting initial profile review.',
-          companyName: 'Google',
-          role: 'Software Engineering Intern',
-        },
-        {
-          id: 'goog-s2',
-          stageName: 'Under Review',
-          date: '14 Aug 2026',
-          statusType: 'completed',
-          shortDescription: 'Application is being reviewed by engineering team',
-          detailedMessage: 'Google engineering managers evaluated your profile and skill benchmarks.',
-          nextStep: 'Preparation for online coding assessment.',
-          companyName: 'Google',
-          role: 'Software Engineering Intern',
-        },
-        {
-          id: 'goog-s3',
-          stageName: 'Shortlisted',
-          date: '16 Aug 2026',
-          statusType: 'completed',
-          shortDescription: 'You have been shortlisted for interview rounds',
-          detailedMessage: 'Congratulations! Your score in the coding assessment qualified you for interview rounds.',
-          nextStep: 'Schedule technical interview slots with recruiters.',
-          companyName: 'Google',
-          role: 'Software Engineering Intern',
-        },
-        {
-          id: 'goog-s4',
-          stageName: 'Interview',
-          date: '20 Aug 2026',
-          statusType: 'current',
-          shortDescription: 'Technical & Data Structures interview scheduled',
-          detailedMessage: 'Your 45-minute virtual technical interview is scheduled with a Senior Staff Engineer.',
-          nextStep: 'Review Data Structures, Algorithms, and System Design fundamentals.',
-          companyName: 'Google',
-          role: 'Software Engineering Intern',
-        },
-        {
-          id: 'goog-s5',
-          stageName: 'Selected',
-          date: 'Pending',
-          statusType: 'upcoming',
-          shortDescription: 'Final decision after interview evaluation',
-          detailedMessage: 'Final hiring committee review will occur post-interview evaluation.',
-          nextStep: 'Complete technical interview first.',
-          companyName: 'Google',
-          role: 'Software Engineering Intern',
-        },
-      ],
-    },
-    {
-      id: 'msft-2',
-      companyName: 'Microsoft',
-      companyLogo: 'MS',
-      role: 'Frontend Development Intern',
-      currentStage: 'Under Review',
-      matchScore: 88,
-      stages: [
-        {
-          id: 'msft-s1',
-          stageName: 'Applied',
-          date: '10 Aug 2026',
-          statusType: 'completed',
-          shortDescription: 'Application submitted successfully',
-          detailedMessage: 'Your profile was submitted for Microsoft Azure Experience Internships.',
-          nextStep: 'Automated document processing.',
-          companyName: 'Microsoft',
-          role: 'Frontend Development Intern',
-        },
-        {
-          id: 'msft-s2',
-          stageName: 'Under Review',
-          date: '15 Aug 2026',
-          statusType: 'current',
-          shortDescription: 'Profile under active recruiter evaluation',
-          detailedMessage: 'Microsoft Talent Acquisition is reviewing your React and TypeScript portfolio projects.',
-          nextStep: 'Keep an eye on email notifications for interview updates.',
-          companyName: 'Microsoft',
-          role: 'Frontend Development Intern',
-        },
-        {
-          id: 'msft-s3',
-          stageName: 'Shortlisted',
-          date: 'Pending',
-          statusType: 'upcoming',
-          shortDescription: 'Potential candidate shortlisting',
-          detailedMessage: 'Candidates will be shortlisted following recruiter verification.',
-          nextStep: 'Await review results.',
-          companyName: 'Microsoft',
-          role: 'Frontend Development Intern',
-        },
-        {
-          id: 'msft-s4',
-          stageName: 'Interview',
-          date: 'Pending',
-          statusType: 'upcoming',
-          shortDescription: 'Round 1 Technical Screening',
-          detailedMessage: 'Interview details will be generated if shortlisted.',
-          companyName: 'Microsoft',
-          role: 'Frontend Development Intern',
-        },
-        {
-          id: 'msft-s5',
-          stageName: 'Selected',
-          date: 'Pending',
-          statusType: 'upcoming',
-          shortDescription: 'Offer letter rollout',
-          detailedMessage: 'Final selection decision pending evaluation.',
-          companyName: 'Microsoft',
-          role: 'Frontend Development Intern',
-        },
-      ],
-    },
-    {
-      id: 'infy-3',
-      companyName: 'Infosys',
-      companyLogo: 'INF',
-      role: 'Web Development Intern',
-      currentStage: 'Selected',
-      matchScore: 92,
-      stages: [
-        {
-          id: 'infy-s1',
-          stageName: 'Applied',
-          date: '01 Aug 2026',
-          statusType: 'completed',
-          shortDescription: 'Application registered on InternIQ portal',
-          detailedMessage: 'Applied for Infosys InStep Global Internship program.',
-          companyName: 'Infosys',
-          role: 'Web Development Intern',
-        },
-        {
-          id: 'infy-s2',
-          stageName: 'Under Review',
-          date: '03 Aug 2026',
-          statusType: 'completed',
-          shortDescription: 'Resume verified by campus relations',
-          detailedMessage: 'Verified academic GPA and core development skills.',
-          companyName: 'Infosys',
-          role: 'Web Development Intern',
-        },
-        {
-          id: 'infy-s3',
-          stageName: 'Shortlisted',
-          date: '05 Aug 2026',
-          statusType: 'completed',
-          shortDescription: 'Shortlisted for direct interview',
-          detailedMessage: 'High skill match qualified you directly for technical discussion.',
-          companyName: 'Infosys',
-          role: 'Web Development Intern',
-        },
-        {
-          id: 'infy-s4',
-          stageName: 'Interview',
-          date: '08 Aug 2026',
-          statusType: 'completed',
-          shortDescription: 'Technical & HR interview completed',
-          detailedMessage: 'Successfully cleared web technologies discussion with Lead Architect.',
-          companyName: 'Infosys',
-          role: 'Web Development Intern',
-        },
-        {
-          id: 'infy-s5',
-          stageName: 'Selected',
-          date: '11 Aug 2026',
-          statusType: 'current',
-          shortDescription: 'Offer extended — Internship Accepted',
-          detailedMessage: 'Congratulations! Official internship offer letter dispatched to your email.',
-          nextStep: 'Submit Digital Logbook and onboarding compliance documents.',
-          companyName: 'Infosys',
-          role: 'Web Development Intern',
-        },
-      ],
-    },
-  ];
+  // Map student applications from context to Timeline selector & stages
+  const timelineInternships = React.useMemo(() => {
+    return applications.map((app) => {
+      const formattedDate = new Date(app.appliedAt).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
 
-  const currentInternship = mockInternships.find((i) => i.id === selectedInternshipId) || mockInternships[0];
-  const activeStage = selectedStage || currentInternship.stages.find((s) => s.statusType === 'current') || currentInternship.stages[0];
+      const stages: StageData[] = [
+        {
+          id: `${app.id}-s1`,
+          stageName: 'Applied',
+          date: formattedDate,
+          statusType: app.currentStage === 'Application Submitted' ? 'current' : 'completed',
+          shortDescription: 'Application submitted successfully via InternIQ',
+          detailedMessage: `Your application and resume details were received by ${app.companyName} University Recruiting.`,
+          nextStep: 'Awaiting initial profile review by talent acquisition.',
+          companyName: app.companyName,
+          role: app.internshipTitle,
+        },
+        {
+          id: `${app.id}-s2`,
+          stageName: 'Under Review',
+          date: app.status === 'Under Review' ? formattedDate : 'Pending',
+          statusType: app.status === 'Under Review' ? 'current' : (app.status === 'Applied' ? 'upcoming' : 'completed'),
+          shortDescription: 'Application is being reviewed by engineering team',
+          detailedMessage: `${app.companyName} engineering managers are evaluating candidate skill benchmarks.`,
+          nextStep: 'Shortlisting & interview scheduling.',
+          companyName: app.companyName,
+          role: app.internshipTitle,
+        },
+        {
+          id: `${app.id}-s3`,
+          stageName: 'Shortlisted',
+          date: (app.status === 'Shortlisted' || app.status === 'Interview Scheduled') ? formattedDate : 'Pending',
+          statusType: (app.status === 'Shortlisted' || app.status === 'Interview Scheduled') ? 'current' : (['Applied', 'Under Review'].includes(app.status) ? 'upcoming' : 'completed'),
+          shortDescription: 'Candidate shortlisted for technical evaluation',
+          detailedMessage: `Congratulations! High skill benchmark qualified you for interview rounds with ${app.companyName}.`,
+          nextStep: 'Technical & behavioral discussion slot booking.',
+          companyName: app.companyName,
+          role: app.internshipTitle,
+        },
+        {
+          id: `${app.id}-s4`,
+          stageName: 'Selected',
+          date: app.status === 'Selected' ? formattedDate : 'Pending',
+          statusType: app.status === 'Selected' ? 'current' : 'upcoming',
+          shortDescription: 'Final decision & official offer letter',
+          detailedMessage: `Official internship offer letter extended by ${app.companyName}.`,
+          nextStep: 'Complete digital logbook and joining compliance.',
+          companyName: app.companyName,
+          role: app.internshipTitle,
+        },
+      ];
+
+      return {
+        id: app.id,
+        companyName: app.companyName,
+        companyLogo: app.companyLogo,
+        role: app.internshipTitle,
+        currentStage: app.currentStage,
+        matchScore: 92,
+        stages,
+      };
+    });
+  }, [applications]);
+
+  // Set default selected internship if none explicitly set
+  React.useEffect(() => {
+    if (timelineInternships.length > 0 && (!selectedInternshipId || !timelineInternships.some(i => i.id === selectedInternshipId))) {
+      setSelectedInternshipId(timelineInternships[0].id);
+    }
+  }, [timelineInternships, selectedInternshipId]);
+
+  const currentInternship = timelineInternships.find((i) => i.id === selectedInternshipId) || timelineInternships[0];
+  const activeStage = selectedStage || currentInternship?.stages.find((s) => s.statusType === 'current') || currentInternship?.stages[0];
 
   const handleStageClick = (stage: StageData) => {
     setSelectedStage(stage);
@@ -239,7 +122,7 @@ export const StudentTimelinePage: React.FC = () => {
 
           {/* Internship Cards Selector */}
           <InternshipSelector
-            internships={mockInternships}
+            internships={timelineInternships}
             selectedId={selectedInternshipId}
             onSelect={(id) => {
               setSelectedInternshipId(id);

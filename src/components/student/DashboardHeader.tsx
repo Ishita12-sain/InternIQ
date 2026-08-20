@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Bell } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 import type { DropdownNotificationItem } from './NotificationDropdown';
+import { useAuth } from '../../context/AuthContext';
 
 interface DashboardHeaderProps {
   onOpenSidebar: () => void;
@@ -11,7 +12,19 @@ interface DashboardHeaderProps {
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onOpenSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+  const getInitials = (name?: string) => {
+    if (!name) return 'ST';
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   // Mock Notifications for Header Dropdown
   const [notifications, setNotifications] = useState<DropdownNotificationItem[]>([
@@ -137,10 +150,10 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onOpenSidebar 
           title="View Profile"
         >
           <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
-            AS
+            {getInitials(user?.name)}
           </div>
           <span className="text-xs font-semibold text-[#0f172a] hidden md:inline-block">
-            Aarav Sharma
+            {user?.name || 'Student'}
           </span>
         </div>
       </div>

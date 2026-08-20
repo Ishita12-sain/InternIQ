@@ -10,9 +10,47 @@ import { ApplicationStatus } from '../../components/student/ApplicationStatus';
 import { InternshipTimeline } from '../../components/student/InternshipTimeline';
 import { Award, FileText, Sparkles, CheckCircle2, Search, User, Eye } from 'lucide-react';
 
+import { useAuth } from '../../context/AuthContext';
+import { useApplication } from '../../context/ApplicationContext';
+import { calculateReadinessScore } from '../../utils/readinessScoreCalculator';
+
 export const StudentDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { applications } = useApplication();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Compute authenticated student's real readiness score
+  const dynamicScore = React.useMemo(() => {
+    if (!user?.id) return 78;
+    try {
+      const profileStorageKey = `interniq_student_profile_${user.id}`;
+      const skillsStorageKey = `interniq_student_skills_${user.id}`;
+      const certsStorageKey = `interniq_student_certs_${user.id}`;
+      const projectsStorageKey = `interniq_student_projects_${user.id}`;
+
+      const savedProfile = localStorage.getItem(profileStorageKey);
+      const savedSkills = localStorage.getItem(skillsStorageKey);
+      const savedCerts = localStorage.getItem(certsStorageKey);
+      const savedProjects = localStorage.getItem(projectsStorageKey);
+
+      const profile = savedProfile ? JSON.parse(savedProfile) : {};
+      const skills = savedSkills ? JSON.parse(savedSkills) : [];
+      const certs = savedCerts ? JSON.parse(savedCerts) : [];
+      const projects = savedProjects ? JSON.parse(savedProjects) : [];
+
+      const evalRes = calculateReadinessScore(
+        { name: user.name, email: user.email, ...profile },
+        skills,
+        certs,
+        projects,
+        applications
+      );
+      return evalRes.totalScore;
+    } catch (e) {
+      return 78;
+    }
+  }, [user, applications]);
 
   const mockInternships: InternshipItem[] = [
     {
@@ -92,9 +130,9 @@ export const StudentDashboard: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <SummaryCard
               title="Readiness Score"
-              value="78%"
+              value={`${dynamicScore}%`}
               icon={<Award className="w-5 h-5" />}
-              accentText="Good"
+              accentText={dynamicScore >= 75 ? 'Good' : 'Active'}
             />
             <SummaryCard
               title="Applications"

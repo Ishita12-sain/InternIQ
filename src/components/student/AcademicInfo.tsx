@@ -7,12 +7,24 @@ interface AcademicInfoProps {
 }
 
 export const AcademicInfo: React.FC<AcademicInfoProps> = ({ profile }) => {
+  const displayYearOrSemester = () => {
+    if (profile.semester) {
+      return typeof profile.semester === 'number' || !isNaN(Number(profile.semester))
+        ? `Semester ${profile.semester}`
+        : profile.semester;
+    }
+    if (profile.year) {
+      return profile.year;
+    }
+    return 'Not provided';
+  };
+
   const fields = [
-    { label: 'College', value: profile.college, icon: <Building2 className="w-4 h-4 text-slate-400" /> },
-    { label: 'Department', value: profile.department, icon: <BookOpen className="w-4 h-4 text-slate-400" /> },
-    { label: 'Year', value: profile.year, icon: <GraduationCap className="w-4 h-4 text-slate-400" /> },
-    { label: 'CGPA', value: profile.cgpa, icon: <Award className="w-4 h-4 text-slate-400" /> },
-    { label: 'Graduation Year', value: profile.graduationYear, icon: <Calendar className="w-4 h-4 text-slate-400" /> },
+    { label: 'College', value: profile.college || 'Not provided', icon: <Building2 className="w-4 h-4 text-slate-400" /> },
+    { label: 'Department', value: profile.department || 'Not provided', icon: <BookOpen className="w-4 h-4 text-slate-400" /> },
+    { label: 'Year / Semester', value: displayYearOrSemester(), icon: <GraduationCap className="w-4 h-4 text-slate-400" /> },
+    { label: 'CGPA', value: profile.cgpa || 'Not provided', icon: <Award className="w-4 h-4 text-slate-400" /> },
+    { label: 'Graduation Year', value: profile.graduationYear || 'Not provided', icon: <Calendar className="w-4 h-4 text-slate-400" /> },
   ];
 
   return (

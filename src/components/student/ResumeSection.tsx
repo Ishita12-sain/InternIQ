@@ -24,7 +24,7 @@ export const ResumeSection: React.FC = () => {
     }
     // Default initial mock resume if none uploaded yet
     return {
-      fileName: 'Aarav_Sharma_Resume.pdf',
+      fileName: 'Student_Resume_2026.pdf',
       fileType: 'PDF Document',
       fileSize: '1.2 MB',
       uploadDate: '15 Aug 2026',

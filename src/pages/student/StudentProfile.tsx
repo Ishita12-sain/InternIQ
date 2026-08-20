@@ -7,24 +7,47 @@ import { PersonalInfo } from '../../components/student/PersonalInfo';
 import { AcademicInfo } from '../../components/student/AcademicInfo';
 import { SkillsSection } from '../../components/student/SkillsSection';
 import { CertificationsSection } from '../../components/student/CertificationsSection';
-import type { CertificationItem } from '../../components/student/CertificationsSection';
 import { ProjectsSection } from '../../components/student/ProjectsSection';
-import type { ProjectItem } from '../../components/student/ProjectsSection';
 import { ResumeSection } from '../../components/student/ResumeSection';
 import { ProfileCompletion } from '../../components/student/ProfileCompletion';
-import { X, Save } from 'lucide-react';
+import { AddCertificationModal } from '../../components/student/AddCertificationModal';
+import { AddProjectModal } from '../../components/student/AddProjectModal';
+import { EditProfileModal } from '../../components/student/EditProfileModal';
+import { useAuth } from '../../context/AuthContext';
+import type { CertificationItem, ProjectItem } from '../../types/studentProfile';
 
 export const StudentProfile: React.FC = () => {
+  const { user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  // Per-user profile storage key
+  const profileStorageKey = `interniq_student_profile_${user?.id || 'default'}`;
+  const photoStorageKey = `interniq_student_photo_${user?.id || 'default'}`;
+
   const [profile, setProfile] = useState<StudentProfileData>(() => {
-    const savedPhoto = localStorage.getItem('interniq_student_photo');
+    const savedPhoto = localStorage.getItem(photoStorageKey);
+    const savedProfile = localStorage.getItem(profileStorageKey);
+
+    if (savedProfile) {
+      try {
+        const parsed = JSON.parse(savedProfile);
+        return {
+          ...parsed,
+          name: user?.name || parsed.name || 'Student',
+          email: user?.email || parsed.email || 'student@interniq.edu',
+          photoUrl: savedPhoto || parsed.photoUrl || undefined,
+        };
+      } catch (err) {
+        // fallback
+      }
+    }
+
     return {
-      name: 'Aarav Sharma',
-      email: 'student@interniq.edu',
-      studentId: 'STU2026-001',
-      department: 'Computer Engineering',
+      name: user?.name || 'Student',
+      email: user?.email || 'student@interniq.edu',
+      studentId: `STU-${(user?.id || '001').slice(-6).toUpperCase()}`,
+      department: user?.department || 'Computer Engineering',
       year: '3rd Year',
       phone: '+91 98765 43210',
       dob: '15 August 2005',
@@ -33,104 +56,189 @@ export const StudentProfile: React.FC = () => {
       college: 'ABC Institute of Technology',
       cgpa: '8.4 / 10',
       graduationYear: '2027',
-      linkedinUrl: 'https://www.linkedin.com/in/aarav-sharma',
+      linkedinUrl: user?.name ? `https://www.linkedin.com/in/${user.name.toLowerCase().replace(/\s+/g, '-')}` : 'https://www.linkedin.com',
       photoUrl: savedPhoto || undefined,
     };
   });
 
+  // Sync profile when logged-in user changes
+  React.useEffect(() => {
+    if (user) {
+      setProfile((prev) => ({
+        ...prev,
+        name: user.name,
+        email: user.email,
+        department: user.department || prev.department,
+        studentId: prev.studentId || `STU-${user.id.slice(-6).toUpperCase()}`,
+      }));
+    }
+  }, [user]);
+
+  // Persist profile edits per user
+  React.useEffect(() => {
+    if (user?.id) {
+      localStorage.setItem(profileStorageKey, JSON.stringify(profile));
+    }
+  }, [profile, profileStorageKey, user?.id]);
+
   const handlePhotoUpload = (photoUrl: string) => {
     setProfile((prev) => ({ ...prev, photoUrl }));
-    localStorage.setItem('interniq_student_photo', photoUrl);
+    localStorage.setItem(photoStorageKey, photoUrl);
   };
 
   const handlePhotoRemove = () => {
     setProfile((prev) => ({ ...prev, photoUrl: undefined }));
-    localStorage.removeItem('interniq_student_photo');
+    localStorage.removeItem(photoStorageKey);
   };
 
-  const [skills, setSkills] = useState<string[]>([
-    'React', 'TypeScript', 'JavaScript', 'HTML', 'CSS', 'Node.js', 'Git', 'SQL'
-  ]);
+  // Per-user storage keys for skills, certifications & projects
+  const skillsStorageKey = `interniq_student_skills_${user?.id || 'default'}`;
+  const certsStorageKey = `interniq_student_certs_${user?.id || 'default'}`;
+  const projectsStorageKey = `interniq_student_projects_${user?.id || 'default'}`;
 
-  const [certifications, setCertifications] = useState<CertificationItem[]>([
-    { id: '1', name: 'React Development', issuer: 'Frontend Certification', year: '2025' },
-    { id: '2', name: 'Python Programming', issuer: 'Programming Certification', year: '2024' },
-  ]);
-
-  const [projects, setProjects] = useState<ProjectItem[]>([
-    {
-      id: '1',
-      title: 'InternIQ',
-      description: 'Intelligent Internship & Placement Management Platform for institutions.',
-      techStack: ['React', 'TypeScript', 'Tailwind CSS'],
-    },
-    {
-      id: '2',
-      title: 'E-Commerce Website',
-      description: 'Full Stack Web Application with product catalog & cart checkout.',
-      techStack: ['React', 'Node.js', 'MongoDB'],
-    },
-  ]);
-
-  // Edit Modal Form State
-  const [editForm, setEditForm] = useState({
-    name: profile.name,
-    phone: profile.phone,
-    city: profile.city,
-    newSkill: '',
+  const [skills, setSkills] = useState<string[]>(() => {
+    const saved = localStorage.getItem(skillsStorageKey);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (err) { }
+    }
+    return ['React', 'TypeScript', 'JavaScript', 'HTML', 'CSS', 'Node.js', 'Git', 'SQL'];
   });
 
-  const handleSaveEdit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setProfile((prev) => ({
-      ...prev,
-      name: editForm.name,
-      phone: editForm.phone,
-      city: editForm.city,
-    }));
-
-    if (editForm.newSkill.trim() && !skills.includes(editForm.newSkill.trim())) {
-      setSkills((prev) => [...prev, editForm.newSkill.trim()]);
+  const [certifications, setCertifications] = useState<CertificationItem[]>(() => {
+    const saved = localStorage.getItem(certsStorageKey);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (err) { }
     }
+    return [
+      {
+        id: '1',
+        name: 'React Development Professional',
+        issuer: 'Frontend Engineering Institute',
+        issueDate: '2025-05-15',
+        year: '2025',
+        credentialId: 'CERT-FE-88190',
+        credentialUrl: 'https://www.credly.com/badges/sample-react-cert',
+        verificationStatus: 'verified',
+        createdAt: '2025-05-15T00:00:00.000Z',
+      },
+      {
+        id: '2',
+        name: 'Python Programming Masterclass',
+        issuer: 'Global Tech Academy',
+        issueDate: '2024-11-10',
+        year: '2024',
+        credentialId: 'PY-994012',
+        verificationStatus: 'pending',
+        createdAt: '2024-11-10T00:00:00.000Z',
+      },
+    ];
+  });
 
-    setIsEditModalOpen(false);
-  };
+  const [projects, setProjects] = useState<ProjectItem[]>(() => {
+    const saved = localStorage.getItem(projectsStorageKey);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (err) { }
+    }
+    return [
+      {
+        id: '1',
+        title: 'InternIQ Platform',
+        description: 'Intelligent Internship & Placement Management System for institutional placement drives.',
+        role: 'Lead Frontend Developer',
+        techStack: ['React', 'TypeScript', 'Tailwind CSS', 'Node.js'],
+        startDate: '2025-01-10',
+        endDate: '2025-06-30',
+        githubUrl: 'https://github.com/sample/interniq',
+        liveDemoUrl: 'https://interniq.app',
+        verificationStatus: 'verified',
+        createdAt: '2025-01-10T00:00:00.000Z',
+      },
+      {
+        id: '2',
+        title: 'E-Commerce Marketplace',
+        description: 'Full Stack Web Application with product catalog, cart checkout & online payment integration.',
+        role: 'Full Stack Engineer',
+        techStack: ['React', 'Node.js', 'MongoDB', 'Express'],
+        startDate: '2024-08-01',
+        endDate: '2024-12-15',
+        githubUrl: 'https://github.com/sample/ecommerce-store',
+        verificationStatus: 'pending',
+        createdAt: '2024-08-01T00:00:00.000Z',
+      },
+    ];
+  });
+
+  // Reload per-user data when authenticated user changes
+  React.useEffect(() => {
+    if (user?.id) {
+      const savedSkills = localStorage.getItem(skillsStorageKey);
+      if (savedSkills) setSkills(JSON.parse(savedSkills));
+
+      const savedCerts = localStorage.getItem(certsStorageKey);
+      if (savedCerts) setCertifications(JSON.parse(savedCerts));
+
+      const savedProjects = localStorage.getItem(projectsStorageKey);
+      if (savedProjects) setProjects(JSON.parse(savedProjects));
+    }
+  }, [user?.id, skillsStorageKey, certsStorageKey, projectsStorageKey]);
+
+  // Persist per-user edits
+  React.useEffect(() => {
+    if (user?.id) {
+      localStorage.setItem(skillsStorageKey, JSON.stringify(skills));
+      localStorage.setItem(certsStorageKey, JSON.stringify(certifications));
+      localStorage.setItem(projectsStorageKey, JSON.stringify(projects));
+    }
+  }, [skills, certifications, projects, skillsStorageKey, certsStorageKey, projectsStorageKey, user?.id]);
+
+  // Modal Control States
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [editingCert, setEditingCert] = useState<CertificationItem | null>(null);
+
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<ProjectItem | null>(null);
 
   const handleAddSkillPrompt = () => {
-    const skillName = prompt('Enter new skill:');
+    const skillName = window.prompt('Enter new skill:');
     if (skillName && skillName.trim() && !skills.includes(skillName.trim())) {
       setSkills((prev) => [...prev, skillName.trim()]);
     }
   };
 
-  const handleAddCertificationPrompt = () => {
-    const certName = prompt('Enter Certification Name:');
-    if (certName && certName.trim()) {
-      setCertifications((prev) => [
-        ...prev,
-        {
-          id: String(Date.now()),
-          name: certName.trim(),
-          issuer: 'Verified Institution',
-          year: String(new Date().getFullYear()),
-        },
-      ]);
-    }
+  // Certification Handlers
+  const handleSaveCertification = (cert: CertificationItem) => {
+    setCertifications((prev) => {
+      const exists = prev.some((c) => c.id === cert.id);
+      if (exists) {
+        return prev.map((c) => (c.id === cert.id ? cert : c));
+      }
+      return [cert, ...prev];
+    });
   };
 
-  const handleAddProjectPrompt = () => {
-    const projectTitle = prompt('Enter Project Title:');
-    if (projectTitle && projectTitle.trim()) {
-      setProjects((prev) => [
-        ...prev,
-        {
-          id: String(Date.now()),
-          title: projectTitle.trim(),
-          description: 'Custom Student Showcase Project.',
-          techStack: ['React', 'TypeScript'],
-        },
-      ]);
-    }
+  const handleDeleteCertification = (id: string) => {
+    setCertifications((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  // Project Handlers
+  const handleSaveProject = (project: ProjectItem) => {
+    setProjects((prev) => {
+      const exists = prev.some((p) => p.id === project.id);
+      if (exists) {
+        return prev.map((p) => (p.id === project.id ? project : p));
+      }
+      return [project, ...prev];
+    });
+  };
+
+  const handleDeleteProject = (id: string) => {
+    setProjects((prev) => prev.filter((p) => p.id !== id));
   };
 
   return (
@@ -152,22 +260,14 @@ export const StudentProfile: React.FC = () => {
               <div className="text-left">
                 <h1 className="text-xl sm:text-2xl font-extrabold text-[#0f172a]">My Profile</h1>
                 <p className="text-xs sm:text-sm text-[#64748b] mt-1">
-                  Manage your personal and academic information.
+                  Manage your personal, academic, certification credentials & technical project showcase.
                 </p>
               </div>
 
               {/* Profile Header Card */}
               <ProfileHeader
                 profile={profile}
-                onEditClick={() => {
-                  setEditForm({
-                    name: profile.name,
-                    phone: profile.phone,
-                    city: profile.city,
-                    newSkill: '',
-                  });
-                  setIsEditModalOpen(true);
-                }}
+                onEditClick={() => setIsEditModalOpen(true)}
                 onPhotoUpload={handlePhotoUpload}
                 onPhotoRemove={handlePhotoRemove}
               />
@@ -190,14 +290,34 @@ export const StudentProfile: React.FC = () => {
 
             {/* Right 5 Columns: Skills, Certifications, Projects */}
             <div className="lg:col-span-5 space-y-6">
-              <SkillsSection skills={skills} onAddSkill={handleAddSkillPrompt} />
+              <SkillsSection
+                skills={skills}
+                onAddSkill={handleAddSkillPrompt}
+                onRemoveSkill={(skill) => setSkills((prev) => prev.filter((s) => s !== skill))}
+              />
               <CertificationsSection
                 certifications={certifications}
-                onAddCertification={handleAddCertificationPrompt}
+                onAddCertification={() => {
+                  setEditingCert(null);
+                  setIsCertModalOpen(true);
+                }}
+                onEditCertification={(cert) => {
+                  setEditingCert(cert);
+                  setIsCertModalOpen(true);
+                }}
+                onDeleteCertification={handleDeleteCertification}
               />
               <ProjectsSection
                 projects={projects}
-                onAddProject={handleAddProjectPrompt}
+                onAddProject={() => {
+                  setEditingProject(null);
+                  setIsProjectModalOpen(true);
+                }}
+                onEditProject={(project) => {
+                  setEditingProject(project);
+                  setIsProjectModalOpen(true);
+                }}
+                onDeleteProject={handleDeleteProject}
               />
             </div>
           </div>
@@ -205,84 +325,42 @@ export const StudentProfile: React.FC = () => {
       </div>
 
       {/* Edit Profile UI Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 w-full max-w-md shadow-xl relative animate-in fade-in zoom-in-95 duration-150 text-left space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-[#0f172a]">Edit Profile Details</h3>
-              <button
-                onClick={() => setIsEditModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* Complete Profile Edit Modal */}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        profile={profile}
+        onSave={(updated) => {
+          setProfile(updated);
+          if (updated.photoUrl) {
+            localStorage.setItem(photoStorageKey, updated.photoUrl);
+          } else {
+            localStorage.removeItem(photoStorageKey);
+          }
+        }}
+      />
 
-            <form onSubmit={handleSaveEdit} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Full Name</label>
-                <input
-                  type="text"
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2563eb]"
-                  required
-                />
-              </div>
+      {/* Add / Edit Certification Modal */}
+      <AddCertificationModal
+        isOpen={isCertModalOpen}
+        onClose={() => {
+          setIsCertModalOpen(false);
+          setEditingCert(null);
+        }}
+        onSave={handleSaveCertification}
+        editingCert={editingCert}
+      />
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Phone Number</label>
-                <input
-                  type="text"
-                  value={editForm.phone}
-                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2563eb]"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">City</label>
-                <input
-                  type="text"
-                  value={editForm.city}
-                  onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2563eb]"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Add Skill (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Next.js"
-                  value={editForm.newSkill}
-                  onChange={(e) => setEditForm({ ...editForm, newSkill: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2563eb]"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#2563eb] hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs"
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>Save Changes</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Add / Edit Project Modal */}
+      <AddProjectModal
+        isOpen={isProjectModalOpen}
+        onClose={() => {
+          setIsProjectModalOpen(false);
+          setEditingProject(null);
+        }}
+        onSave={handleSaveProject}
+        editingProject={editingProject}
+      />
     </div>
   );
 };

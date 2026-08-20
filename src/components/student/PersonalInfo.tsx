@@ -7,7 +7,7 @@ interface PersonalInfoProps {
 }
 
 export const PersonalInfo: React.FC<PersonalInfoProps> = ({ profile }) => {
-  const linkedinUrl = profile.linkedinUrl || 'https://www.linkedin.com/in/aarav-sharma';
+  const linkedinUrl = profile.linkedinUrl || `https://www.linkedin.com/in/${(profile.name || 'student').toLowerCase().replace(/\s+/g, '-')}`;
 
   // Generate dynamic QR Code matrix URL using QuickChart QR API
   const qrApiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(linkedinUrl)}&size=160&margin=1`;
@@ -24,7 +24,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({ profile }) => {
             <User className="w-4 h-4 text-slate-400" />
             <span>Full Name</span>
           </div>
-          <p className="text-sm font-semibold text-[#0f172a] pl-6">{profile.name}</p>
+          <p className="text-sm font-semibold text-[#0f172a] pl-6">{profile.name || 'Not provided'}</p>
         </div>
 
         {/* Email Address (Clickable mailto) */}
@@ -33,13 +33,17 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({ profile }) => {
             <Mail className="w-4 h-4 text-[#2563eb]" />
             <span>Email Address</span>
           </div>
-          <a
-            href={`mailto:${profile.email}`}
-            className="text-sm font-semibold text-[#2563eb] hover:underline pl-6 block truncate"
-            title={profile.email}
-          >
-            {profile.email}
-          </a>
+          {profile.email ? (
+            <a
+              href={`mailto:${profile.email}`}
+              className="text-sm font-semibold text-[#2563eb] hover:underline pl-6 block truncate"
+              title={profile.email}
+            >
+              {profile.email}
+            </a>
+          ) : (
+            <p className="text-sm font-semibold text-slate-400 pl-6">Not provided</p>
+          )}
         </div>
 
         {/* Phone Number */}
@@ -48,7 +52,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({ profile }) => {
             <Phone className="w-4 h-4 text-slate-400" />
             <span>Phone Number</span>
           </div>
-          <p className="text-sm font-semibold text-[#0f172a] pl-6">{profile.phone}</p>
+          <p className="text-sm font-semibold text-[#0f172a] pl-6">{profile.phone || 'Not provided'}</p>
         </div>
 
         {/* Date of Birth */}
@@ -57,7 +61,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({ profile }) => {
             <Calendar className="w-4 h-4 text-slate-400" />
             <span>Date of Birth</span>
           </div>
-          <p className="text-sm font-semibold text-[#0f172a] pl-6">{profile.dob}</p>
+          <p className="text-sm font-semibold text-[#0f172a] pl-6">{profile.dob || 'Not provided'}</p>
         </div>
 
         {/* Gender */}
@@ -66,7 +70,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({ profile }) => {
             <Shield className="w-4 h-4 text-slate-400" />
             <span>Gender</span>
           </div>
-          <p className="text-sm font-semibold text-[#0f172a] pl-6">{profile.gender}</p>
+          <p className="text-sm font-semibold text-[#0f172a] pl-6">{profile.gender || 'Not provided'}</p>
         </div>
 
         {/* City */}
@@ -75,7 +79,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({ profile }) => {
             <MapPin className="w-4 h-4 text-slate-400" />
             <span>City</span>
           </div>
-          <p className="text-sm font-semibold text-[#0f172a] pl-6">{profile.city}</p>
+          <p className="text-sm font-semibold text-[#0f172a] pl-6">{profile.city || 'Not provided'}</p>
         </div>
       </div>
 

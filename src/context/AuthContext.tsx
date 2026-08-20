@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { RoleType, User } from '../types/auth';
 import { MOCK_USERS } from '../config/roles';
@@ -6,7 +6,11 @@ import { MOCK_USERS } from '../config/roles';
 interface AuthContextType {
   user: User | null;
   role: RoleType | null;
-  login: (role: RoleType) => void;
+  login: (
+    email: string,
+    password: string,
+    selectedRole: RoleType
+  ) => Promise<void>;
   logout: () => void;
 }
 
@@ -15,21 +19,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     try {
-      const saved = localStorage.getItem('interniq_active_user');
-      if (saved) return JSON.parse(saved);
-    } catch (err) {
-      console.warn('Failed to parse auth user from localStorage', err);
+      const savedUser = localStorage.getItem('interniq_active_user');
+      if (savedUser) {
+        return JSON.parse(savedUser);
+      }
+    } catch (error) {
+      console.warn('Failed to load saved user:', error);
     }
-    return {
-      id: 'usr-default',
-      name: MOCK_USERS.faculty.name,
-      email: MOCK_USERS.faculty.email,
-      role: 'faculty',
-      department: MOCK_USERS.faculty.department,
-    };
+    return null;
   });
 
-  const role = user ? user.role : null;
+  const role = user?.role ?? null;
 
   useEffect(() => {
     try {
@@ -38,31 +38,72 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else {
         localStorage.removeItem('interniq_active_user');
       }
-    } catch (err) {
-      console.warn('Failed to sync auth state to localStorage', err);
+    } catch (error) {
+      console.warn('Failed to save auth user:', error);
     }
   }, [user]);
 
-  const login = (selectedRole: RoleType) => {
-    const mock = MOCK_USERS[selectedRole];
+  const login = async (
+    email: string,
+    password: string,
+    selectedRole: RoleType
+  ): Promise<void> => {
+    // 1. Validate email is present
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      throw new Error('Email address is required');
+    }
+    if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
+      throw new Error('Please enter a valid email address');
+    }
+
+    // 2. Validate password is at least 6 characters
+    if (!password || password.length < 6) {
+      throw new Error('Password must be at least 6 characters');
+    }
+
+    // 3. Simulate short loading delay (350ms)
+    await new Promise((resolve) => setTimeout(resolve, 350));
+
+    // 4. Extract display name from email (e.g. dishaubale90 -> Disha Ubale or Disha Ubale from email prefix)
+    const emailNamePart = trimmedEmail.split('@')[0].replace(/[0-9]/g, '').replace(/[\._]/g, ' ');
+    const formattedName = emailNamePart
+      ? emailNamePart
+          .split(' ')
+          .filter(Boolean)
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      : `${selectedRole.toUpperCase()} User`;
+
+    const roleMock = MOCK_USERS[selectedRole];
     const newUser: User = {
-      id: `usr-${selectedRole}`,
-      name: mock.name,
-      email: mock.email,
+      id: `usr-${selectedRole}-${Date.now().toString(36)}`,
+      name: formattedName || roleMock?.name || `${selectedRole.toUpperCase()} User`,
+      email: trimmedEmail,
       role: selectedRole,
-      department: mock.department,
-      companyName: mock.companyName,
+      department: roleMock?.department || 'Computer Engineering',
+      companyName: roleMock?.companyName,
     };
+
+    // 5. Save user to state & localStorage
     setUser(newUser);
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('interniq_active_user');
+    localStorage.removeItem('interniq_access_token');
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        role,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

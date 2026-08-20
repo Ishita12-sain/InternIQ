@@ -11,9 +11,11 @@ import { useAuth } from '../../context/AuthContext';
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+
   const [selectedRole, setSelectedRole] = useState<RoleType>('student');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState<LoginFormData>({
     email: MOCK_USERS.student.email,
     password: 'password123',
@@ -21,24 +23,30 @@ export const LoginForm: React.FC = () => {
     rememberMe: true,
   });
 
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
 
   const handleRoleChange = (role: RoleType) => {
     setSelectedRole(role);
-    setFormData((prev: LoginFormData) => ({
+    setFormData((prev) => ({
       ...prev,
       role,
-      email: MOCK_USERS[role].email,
+      email: MOCK_USERS[role]?.email || prev.email,
     }));
     setErrors({});
   };
 
   const validate = () => {
-    const newErrors: { email?: string; password?: string } = {};
+    const newErrors: {
+      email?: string;
+      password?: string;
+    } = {};
 
     if (!formData.email.trim()) {
       newErrors.email = 'Email address is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!/\S+@\S+\.\S+/.test(formData.email.trim())) {
       newErrors.email = 'Please enter a valid email address';
     }
 
@@ -52,22 +60,47 @@ export const LoginForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validate()) return;
 
     setIsLoading(true);
+    setErrors({});
 
-    setTimeout(() => {
+    try {
+      await login(
+        formData.email,
+        formData.password || '',
+        selectedRole
+      );
+
+      // Route mapping for each role
+      const targetRoutes: Record<RoleType, string> = {
+        student: '/dashboard/student',
+        company: '/dashboard/company',
+        faculty: '/faculty/dashboard',
+        tnp: '/tp/dashboard',
+        admin: '/dashboard/admin',
+      };
+
+      navigate(targetRoutes[selectedRole] || `/dashboard/${selectedRole}`);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to sign in. Please try again.';
+
+      setErrors({
+        password: message,
+      });
+    } finally {
       setIsLoading(false);
-      login(selectedRole);
-      navigate(`/dashboard/${selectedRole}`);
-    }, 600);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 text-left">
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 text-left">
       {/* Email Input */}
       <Input
         label="Email Address"
@@ -75,7 +108,10 @@ export const LoginForm: React.FC = () => {
         name="email"
         placeholder="Enter your email"
         value={formData.email}
-        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        onChange={(e) => {
+          setFormData({ ...formData, email: e.target.value });
+          if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+        }}
         error={errors.email}
         leftIcon={<Mail className="w-4 h-4 text-slate-400" />}
         required
@@ -89,7 +125,10 @@ export const LoginForm: React.FC = () => {
           name="password"
           placeholder="Enter your password"
           value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          onChange={(e) => {
+            setFormData({ ...formData, password: e.target.value });
+            if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+          }}
           error={errors.password}
           leftIcon={<Lock className="w-4 h-4 text-slate-400" />}
           rightIcon={
@@ -125,7 +164,7 @@ export const LoginForm: React.FC = () => {
         type="submit"
         variant="primary"
         size="lg"
-        className="w-full py-3.5 text-base font-semibold rounded-xl bg-[#2563eb] hover:bg-blue-700 text-white shadow-sm transition-all cursor-pointer"
+        className="w-full py-3 sm:py-3.5 text-sm sm:text-base font-semibold rounded-xl bg-[#2563eb] hover:bg-blue-700 text-white shadow-xs transition-all cursor-pointer"
         isLoading={isLoading}
       >
         Sign In
@@ -138,7 +177,7 @@ export const LoginForm: React.FC = () => {
       </div>
 
       {/* Create Account Link */}
-      <div className="text-center pt-2 text-xs text-[#64748b]">
+      <div className="text-center pt-1 text-xs text-[#64748b]">
         Don't have an account?{' '}
         <button
           type="button"

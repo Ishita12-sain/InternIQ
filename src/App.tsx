@@ -73,13 +73,16 @@ import { AdminSelectedStudentsPage } from './pages/admin/AdminSelectedStudentsPa
 import { AdminOngoingInternshipsPage } from './pages/admin/AdminOngoingInternshipsPage';
 import { DummyDashboardPage } from './pages/dashboard/DummyDashboardPage';
 
+import { ApplicationProvider } from './context/ApplicationContext';
+
 export const App: React.FC = () => {
   return (
     <AuthProvider>
       <SettingsProvider>
         <AuditLogProvider>
           <NotificationProvider>
-            <Router>
+            <ApplicationProvider>
+              <Router>
               <Routes>
                 {/* Public Auth Routes */}
                 <Route path="/" element={<Navigate to="/login" replace />} />
@@ -197,8 +200,9 @@ export const App: React.FC = () => {
                 <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
             </Router>
-          </NotificationProvider>
-        </AuditLogProvider>
+          </ApplicationProvider>
+        </NotificationProvider>
+      </AuditLogProvider>
       </SettingsProvider>
     </AuthProvider>
   );
