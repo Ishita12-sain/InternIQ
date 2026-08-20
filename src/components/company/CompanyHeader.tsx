@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Menu, Bell } from 'lucide-react';
 import { NotificationDropdown } from '../student/NotificationDropdown';
 import type { DropdownNotificationItem } from '../student/NotificationDropdown';
+import { useAuth } from '../../context/AuthContext';
 
 interface CompanyHeaderProps {
   onOpenSidebar: () => void;
@@ -16,6 +17,7 @@ export const CompanyHeader: React.FC<CompanyHeaderProps> = ({
   subtitle = 'Manage your internships, applications, and candidate evaluations.',
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   const [notifications, setNotifications] = useState<DropdownNotificationItem[]>([
@@ -123,11 +125,11 @@ export const CompanyHeader: React.FC<CompanyHeaderProps> = ({
             />
           ) : (
             <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-black text-xs flex items-center justify-center shadow-2xs shrink-0">
-              TN
+              {user?.companyName ? user.companyName.slice(0, 2).toUpperCase() : user?.name ? user.name.slice(0, 2).toUpperCase() : 'CO'}
             </div>
           )}
           <span className="text-xs font-bold text-[#0f172a] hidden md:inline-block">
-            TechNova Solutions
+            {user?.companyName || user?.name || 'Company Portal'}
           </span>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { Menu, Bell, LogOut } from 'lucide-react';
 import { NotificationDropdown } from '../student/NotificationDropdown';
 import { useNotification } from '../../context/NotificationContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface TPHeaderProps {
   onOpenSidebar: () => void;
@@ -20,6 +21,7 @@ export const TPHeader: React.FC<TPHeaderProps> = ({
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotification();
   const { settings } = useSettings();
+  const { user, logout } = useAuth();
 
   const dropdownNotifications = notifications.map((n) => ({
     id: n.id,
@@ -93,17 +95,20 @@ export const TPHeader: React.FC<TPHeaderProps> = ({
             />
           ) : (
             <div className="w-8 h-8 rounded-full bg-[#2563eb] text-white font-extrabold text-xs flex items-center justify-center border border-blue-400 shadow-2xs shrink-0">
-              TP
+              {user?.name ? user.name.slice(0, 2).toUpperCase() : 'TP'}
             </div>
           )}
           <span className="text-xs font-bold text-[#0f172a] hidden md:inline-block">
-            T&P Officer
+            {user?.name || 'T&P Officer'}
           </span>
         </div>
 
         {/* Quick Sign Out */}
         <button
-          onClick={() => navigate('/login')}
+          onClick={() => {
+            logout();
+            navigate('/login', { replace: true });
+          }}
           title="Sign Out"
           className="hidden sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
         >

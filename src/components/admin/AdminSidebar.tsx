@@ -18,18 +18,25 @@ import {
   ChevronRight,
   History,
 } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface AdminSidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-import { useSettings } from '../../context/SettingsContext';
-
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { settings } = useSettings();
+  const { user, logout } = useAuth();
+
+  const handleSignOut = () => {
+    logout();
+    navigate('/login', { replace: true });
+    onClose();
+  };
 
   const navItems = [
     { label: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -126,21 +133,21 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
               {settings.adminProfile.photoUrl ? (
                 <img
                   src={settings.adminProfile.photoUrl}
-                  alt={settings.adminProfile.name}
+                  alt={user?.name || settings.adminProfile.name}
                   className="w-9 h-9 rounded-xl object-cover shrink-0 border border-slate-200 shadow-2xs"
                 />
               ) : (
                 <div className="w-9 h-9 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-2xs">
-                  {settings.adminProfile.avatarInitials || 'SU'}
+                  {user?.name ? user.name.slice(0, 2).toUpperCase() : 'SU'}
                 </div>
               )}
               <div className="truncate text-left">
-                <p className="text-xs font-bold text-[#0f172a] truncate">{settings.adminProfile.name}</p>
-                <p className="text-[11px] text-[#64748b] truncate">{settings.adminProfile.email}</p>
+                <p className="text-xs font-bold text-[#0f172a] truncate">{user?.name || settings.adminProfile.name}</p>
+                <p className="text-[11px] text-[#64748b] truncate">{user?.email || settings.adminProfile.email}</p>
               </div>
             </div>
             <button
-              onClick={() => navigate('/login')}
+              onClick={handleSignOut}
               title="Sign Out"
               className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
             >

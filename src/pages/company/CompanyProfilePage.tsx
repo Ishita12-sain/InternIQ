@@ -4,6 +4,7 @@ import { CompanySidebar } from '../../components/company/CompanySidebar';
 import { CompanyHeader } from '../../components/company/CompanyHeader';
 import { CompanyProfileHeader } from '../../components/company/CompanyProfileHeader';
 import type { CompanyProfileData } from '../../components/company/CompanyProfileHeader';
+import { useAuth } from '../../context/AuthContext';
 import {
   ArrowLeft,
   Globe,
@@ -18,37 +19,52 @@ import {
 
 export const CompanyProfilePage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  const profileStorageKey = `interniq_company_profile_${user?.id || 'default'}`;
+  const logoStorageKey = `interniq_company_logo_${user?.id || 'default'}`;
+
   const [profile, setProfile] = useState<CompanyProfileData>(() => {
-    const saved = localStorage.getItem('interniq_company_profile');
+    const saved = localStorage.getItem(profileStorageKey);
+    const savedLogo = localStorage.getItem(logoStorageKey);
+
     if (saved) {
       try {
-        return JSON.parse(saved);
-      } catch (err) {
-        // Fallback to initial mock state
-      }
+        const parsed = JSON.parse(saved);
+        return {
+          ...parsed,
+          companyName: user?.companyName || parsed.companyName || (user?.name ? `${user.name} Organization` : 'Company Profile'),
+          officialEmail: user?.email || parsed.officialEmail || 'company@interniq.edu',
+          profilePhotoUrl: savedLogo || parsed.profilePhotoUrl || undefined,
+        };
+      } catch (err) {}
     }
+
+    const defaultCompanyName = user?.companyName || (user?.name ? `${user.name} Organization` : 'Company Profile');
+    const defaultEmail = user?.email || 'hr@company.com';
+
     return {
-      companyName: 'TechNova Solutions Inc.',
-      officialEmail: 'hr@technova.com',
-      phone: '+91 20 6789 1234',
-      website: 'https://technova.com',
+      companyName: defaultCompanyName,
+      officialEmail: defaultEmail,
+      phone: user?.phone || '+91 20 6789 1234',
+      website: `https://${defaultCompanyName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'company'}.com`,
       industry: 'Software & Information Technology',
       companySize: '250 - 500 Employees',
       foundedYear: '2018',
       headquarters: 'Bengaluru, Karnataka, India',
-      companyId: 'CMP-2026-8890',
+      companyId: `CMP-${(user?.id || '2026-8890').slice(-6).toUpperCase()}`,
       about:
-        'TechNova Solutions is a leading software innovation lab delivering cloud-native web platforms, AI integrations, and enterprise digital solutions across India and North America. We empower ambitious student talent through hands-on technical internships.',
-      linkedinUrl: 'https://www.linkedin.com/company/technova-solutions',
-      githubUrl: 'https://github.com/technova-labs',
+        'A leading innovation lab delivering web platforms, AI integrations, and enterprise digital solutions. We empower ambitious student talent through hands-on technical internships.',
+      linkedinUrl: `https://www.linkedin.com/company/${defaultCompanyName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+      githubUrl: `https://github.com/${defaultCompanyName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
       verificationStatus: 'Verified',
       totalPosted: 12,
       activeInternships: 3,
       totalApplicants: 89,
       studentsSelected: 18,
+      profilePhotoUrl: savedLogo || undefined,
     };
   });
 
@@ -64,8 +80,8 @@ export const CompanyProfilePage: React.FC = () => {
   const handlePhotoChange = (photoDataUrl: string) => {
     const updated = { ...profile, profilePhotoUrl: photoDataUrl };
     setProfile(updated);
-    localStorage.setItem('interniq_company_profile', JSON.stringify(updated));
-    localStorage.setItem('interniq_company_logo', photoDataUrl);
+    localStorage.setItem(profileStorageKey, JSON.stringify(updated));
+    localStorage.setItem(logoStorageKey, photoDataUrl);
     window.dispatchEvent(new Event('companyProfileUpdated'));
     setFeedback('Company profile photo updated successfully.');
     setTimeout(() => setFeedback(null), 3000);
@@ -74,8 +90,8 @@ export const CompanyProfilePage: React.FC = () => {
   const handlePhotoRemove = () => {
     const updated = { ...profile, profilePhotoUrl: undefined };
     setProfile(updated);
-    localStorage.setItem('interniq_company_profile', JSON.stringify(updated));
-    localStorage.removeItem('interniq_company_logo');
+    localStorage.setItem(profileStorageKey, JSON.stringify(updated));
+    localStorage.removeItem(logoStorageKey);
     window.dispatchEvent(new Event('companyProfileUpdated'));
     setFeedback('Company profile photo removed.');
     setTimeout(() => setFeedback(null), 3000);
@@ -89,7 +105,7 @@ export const CompanyProfilePage: React.FC = () => {
     }
     setLinkedinError(null);
     setProfile(editForm);
-    localStorage.setItem('interniq_company_profile', JSON.stringify(editForm));
+    localStorage.setItem(profileStorageKey, JSON.stringify(editForm));
     setIsEditModalOpen(false);
     setFeedback('Company profile information saved.');
     setTimeout(() => setFeedback(null), 3000);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CompanySidebar } from '../../components/company/CompanySidebar';
 import { CompanyHeader } from '../../components/company/CompanyHeader';
+import { useAuth } from '../../context/AuthContext';
 import { CompanyOverviewCards } from '../../components/company/CompanyOverviewCards';
 import { CompanyQuickActions } from '../../components/company/CompanyQuickActions';
 import { RecentApplicationsSection } from '../../components/company/RecentApplicationsSection';
@@ -11,6 +12,7 @@ import { HiringOverviewSection } from '../../components/company/HiringOverviewSe
 import { X, Award } from 'lucide-react';
 
 export const CompanyDashboard: React.FC = () => {
+  const { user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState<ApplicantItem | null>(null);
 
@@ -127,7 +129,7 @@ export const CompanyDashboard: React.FC = () => {
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-extrabold text-[#0f172a]">
-                Welcome back, TechNova Solutions!
+                Welcome back, {user?.companyName || user?.name || 'Company Partner'}!
               </h2>
               <p className="text-xs sm:text-sm text-[#64748b]">
                 Here is an overview of your active internship postings and candidate applications.
@@ -136,10 +138,10 @@ export const CompanyDashboard: React.FC = () => {
 
             <div className="flex items-center space-x-3 bg-slate-50 border border-slate-200/80 p-3 rounded-xl shrink-0">
               <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-black flex items-center justify-center text-sm shadow-2xs">
-                TN
+                {user?.companyName ? user.companyName.slice(0, 2).toUpperCase() : user?.name ? user.name.slice(0, 2).toUpperCase() : 'CO'}
               </div>
               <div className="text-left text-xs">
-                <p className="font-bold text-[#0f172a]">TechNova Inc.</p>
+                <p className="font-bold text-[#0f172a]">{user?.companyName || user?.name || 'Company Partner'}</p>
                 <p className="text-[#64748b] font-medium">Enterprise Employer</p>
               </div>
             </div>

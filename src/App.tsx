@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { StudentRegistrationPage } from './pages/auth/StudentRegistration';
-import { RoleRegistrationPlaceholderPage } from './pages/auth/RoleRegistrationPlaceholderPage';
+import { RoleRegistrationPage } from './pages/auth/RoleRegistrationPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { StudentDashboard } from './pages/student/StudentDashboard';
@@ -93,7 +93,7 @@ export const App: React.FC = () => {
                 {/* Public Registration Routes */}
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/register/student" element={<StudentRegistrationPage />} />
-                <Route path="/register/:role" element={<RoleRegistrationPlaceholderPage />} />
+                <Route path="/register/:role" element={<RoleRegistrationPage />} />
 
                 {/* Student Protected Routes */}
                 <Route path="/dashboard/student" element={<ProtectedRoute allowedRoles={['student']}><StudentDashboard /></ProtectedRoute>} />

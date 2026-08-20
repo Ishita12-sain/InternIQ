@@ -66,7 +66,7 @@ export const CompanyProfileHeader: React.FC<CompanyProfileHeaderProps> = ({
                 className="w-full h-full object-cover object-center"
               />
             ) : (
-              <span>TN</span>
+              <span>{profile.companyName ? profile.companyName.slice(0, 2).toUpperCase() : 'CO'}</span>
             )}
           </div>
 

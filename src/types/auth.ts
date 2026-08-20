@@ -17,6 +17,9 @@ export interface User {
   role: RoleType;
   department?: string;
   companyName?: string;
+  designation?: string;
+  employeeId?: string;
+  phone?: string;
   avatar?: string;
 }
 

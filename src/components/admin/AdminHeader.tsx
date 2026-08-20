@@ -4,6 +4,7 @@ import { Menu, Bell, LogOut } from 'lucide-react';
 import { NotificationDropdown } from '../student/NotificationDropdown';
 import { useNotification } from '../../context/NotificationContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface AdminHeaderProps {
   onOpenSidebar: () => void;
@@ -20,6 +21,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotification();
   const { settings } = useSettings();
+  const { user, logout } = useAuth();
 
   const dropdownNotifications = notifications.map((n) => ({
     id: n.id,
@@ -96,22 +98,25 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           {settings.adminProfile.photoUrl ? (
             <img
               src={settings.adminProfile.photoUrl}
-              alt={settings.adminProfile.name}
+              alt={user?.name || settings.adminProfile.name}
               className="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-300 shadow-2xs"
             />
           ) : (
             <div className="w-8 h-8 rounded-full bg-[#0f172a] text-blue-400 font-extrabold text-xs flex items-center justify-center border border-slate-700 shadow-2xs shrink-0">
-              {settings.adminProfile.avatarInitials || 'SU'}
+              {user?.name ? user.name.slice(0, 2).toUpperCase() : 'SU'}
             </div>
           )}
           <span className="text-xs font-bold text-[#0f172a] hidden md:inline-block">
-            {settings.adminProfile.name}
+            {user?.name || settings.adminProfile.name}
           </span>
         </div>
 
         {/* Quick Sign Out */}
         <button
-          onClick={() => navigate('/login')}
+          onClick={() => {
+            logout();
+            navigate('/login', { replace: true });
+          }}
           title="Sign Out"
           className="hidden sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
         >

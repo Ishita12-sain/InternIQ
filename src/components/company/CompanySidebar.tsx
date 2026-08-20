@@ -16,6 +16,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 
+import { useAuth } from '../../context/AuthContext';
+
 interface CompanySidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,6 +26,7 @@ interface CompanySidebarProps {
 export const CompanySidebar: React.FC<CompanySidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard/company', icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -109,15 +112,18 @@ export const CompanySidebar: React.FC<CompanySidebarProps> = ({ isOpen, onClose 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 truncate">
               <div className="w-9 h-9 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-2xs">
-                TN
+                {user?.companyName ? user.companyName.slice(0, 2).toUpperCase() : user?.name ? user.name.slice(0, 2).toUpperCase() : 'CO'}
               </div>
               <div className="truncate text-left">
-                <p className="text-xs font-bold text-[#0f172a] truncate">TechNova Inc.</p>
-                <p className="text-[11px] text-[#64748b] truncate">hr@technova.com</p>
+                <p className="text-xs font-bold text-[#0f172a] truncate">{user?.companyName || user?.name || 'Company Portal'}</p>
+                <p className="text-[11px] text-[#64748b] truncate">{user?.email || 'company@interniq.edu'}</p>
               </div>
             </div>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
               title="Sign Out"
               className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
             >
